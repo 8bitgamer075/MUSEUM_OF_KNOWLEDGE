@@ -1,0 +1,3211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>Museum of Knowledge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #05010a;
+            font-family: "VT323", monospace;
+        }
+
+        #c {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6);
+        }
+
+        #hint {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #e8e0ff;
+            font-size: 20px;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            background: rgba(10, 5, 25, 0.55);
+            padding: 6px 14px;
+            border: 2px solid #6b46ff;
+            display: none;
+            letter-spacing: 1px;
+        }
+
+        #zoneLabel {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-family: "Press Start 2P";
+            font-size: 12px;
+            text-shadow: 2px 2px 0 #000;
+            background: rgba(10, 5, 25, 0.55);
+            padding: 8px 16px;
+            border: 2px solid #ffd94a;
+            display: none;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        #counter {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            color: #ffd94a;
+            font-family: "Press Start 2P";
+            font-size: 11px;
+            text-shadow: 2px 2px 0 #000;
+            background: rgba(10, 5, 25, 0.6);
+            padding: 8px 12px;
+            border: 2px solid #ffd94a;
+            pointer-events: none;
+        }
+
+        #achCounter {
+            position: fixed;
+            top: 60px;
+            right: 16px;
+            color: #7dffe0;
+            font-family: "Press Start 2P";
+            font-size: 10px;
+            text-shadow: 2px 2px 0 #000;
+            background: rgba(10, 5, 25, 0.6);
+            padding: 7px 12px;
+            border: 2px solid #7dffe0;
+            pointer-events: none;
+        }
+
+        #toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #0d0620;
+            border: 3px solid #ffd94a;
+            padding: 14px 20px;
+            color: #ffd94a;
+            font-family: "Press Start 2P";
+            font-size: 11px;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+            z-index: 25;
+            text-align: center;
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #toast .sub {
+            display: block;
+            color: #fff;
+            font-family: "VT323";
+            font-size: 16px;
+            margin-top: 6px;
+        }
+
+        #gearBtn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 38px;
+            height: 38px;
+            background: rgba(10, 5, 25, 0.6);
+            border: 2px solid #6b46ff;
+            color: #e8e0ff;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 16;
+            display: none;
+        }
+
+        #gearBtn:hover {
+            background: rgba(107, 70, 255, 0.3);
+        }
+
+        #settingsPanel {
+            position: fixed;
+            top: 64px;
+            left: 16px;
+            width: 250px;
+            background: rgba(8, 4, 20, 0.96);
+            border: 3px solid #6b46ff;
+            padding: 18px;
+            color: #e8e0ff;
+            display: none;
+            z-index: 16;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #settingsPanel h3 {
+            font-family: "Press Start 2P";
+            font-size: 11px;
+            color: #ffd94a;
+            margin: 0 0 14px;
+        }
+
+        #settingsPanel label {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        #settingsPanel input[type="range"] {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        #settingsPanel button {
+            width: 100%;
+            font-family: "Press Start 2P";
+            font-size: 10px;
+            background: #6b46ff;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        #settingsPanel button:hover {
+            background: #8a63ff;
+        }
+
+        #toolbar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 270px;
+            height: 100%;
+            background: rgba(8, 4, 20, 0.94);
+            border-left: 3px solid #6b46ff;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: right 0.25s ease;
+            color: #e8e0ff;
+            overflow-y: auto;
+            z-index: 15;
+        }
+
+        #toolbar.open {
+            right: 0;
+        }
+
+        #toolbar h2 {
+            font-family: "Press Start 2P";
+            font-size: 13px;
+            color: #ffd94a;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        #toolbar h3 {
+            font-family: "Press Start 2P";
+            font-size: 9px;
+            color: #9bd1ff;
+            margin: 16px 0 6px;
+        }
+
+        .entry {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            margin-bottom: 5px;
+            border: 2px solid #332266;
+            background: rgba(107, 70, 255, 0.08);
+            font-size: 14px;
+        }
+
+        .entry.found {
+            border-color: #6b46ff;
+            background: rgba(107, 70, 255, 0.25);
+        }
+
+        .swatch {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+            border: 2px solid #000;
+        }
+
+        .entry .name {
+            flex: 1;
+        }
+
+        .entry .mark {
+            font-size: 13px;
+        }
+
+        .ach {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            margin-bottom: 5px;
+            border: 2px solid #332266;
+            background: rgba(255, 217, 74, 0.05);
+            font-size: 13px;
+        }
+
+        .ach.unlocked {
+            border-color: #ffd94a;
+            background: rgba(255, 217, 74, 0.18);
+        }
+
+        .ach .icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .ach .info {
+            flex: 1;
+        }
+
+        .ach .info b {
+            color: #ffd94a;
+            display: block;
+            font-size: 12px;
+        }
+
+        #modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 20;
+        }
+
+        #modal .card {
+            width: min(540px, 86vw);
+            background: #0d0620;
+            border: 4px solid #ffd94a;
+            box-shadow:
+                0 0 0 4px #000,
+                0 0 40px rgba(255, 217, 74, 0.35);
+            padding: 26px 28px;
+            color: #f2eaff;
+        }
+
+        #modal .cat {
+            font-family: "Press Start 2P";
+            font-size: 9px;
+            color: #9bd1ff;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        #modal h3 {
+            font-family: "Press Start 2P";
+            font-size: 15px;
+            color: #ffd94a;
+            margin: 0 0 14px;
+            line-height: 1.7;
+        }
+
+        #modal p {
+            font-size: 22px;
+            line-height: 1.4;
+            margin: 0 0 18px;
+        }
+
+        #modal button {
+            font-family: "Press Start 2P";
+            font-size: 11px;
+            background: #6b46ff;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        #modal button:hover {
+            background: #8a63ff;
+        }
+
+        #tutorial {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 40%, #1a0e3d, #05010a);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            z-index: 30;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #tutorial h1 {
+            font-family: "Press Start 2P";
+            font-size: clamp(16px, 3.4vw, 26px);
+            color: #ffd94a;
+            text-shadow: 4px 4px 0 #6b46ff;
+            letter-spacing: 2px;
+            margin-bottom: 18px;
+        }
+
+        #tutorial .slideBody {
+            max-width: 600px;
+        }
+
+        #tutorial p {
+            font-size: 23px;
+            color: #cfc2ff;
+            line-height: 1.5;
+            margin: 8px 0;
+        }
+
+        #tutorial .keyTag {
+            display: inline-block;
+            font-family: "Press Start 2P";
+            font-size: 12px;
+            color: #1a0e3d;
+            background: #ffd94a;
+            padding: 6px 10px;
+            margin: 4px;
+            border: 2px solid #000;
+        }
+
+        #tutorial .dots {
+            margin: 20px 0;
+        }
+
+        #tutorial .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border: 2px solid #ffd94a;
+            margin: 0 4px;
+        }
+
+        #tutorial .dot.on {
+            background: #ffd94a;
+        }
+
+        #tutorial .navRow {
+            display: flex;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        #tutorial button {
+            font-family: "Press Start 2P";
+            font-size: 13px;
+            background: #ffd94a;
+            color: #1a0e3d;
+            border: 3px solid #000;
+            padding: 14px 22px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #6b46ff;
+        }
+
+        #tutorial button.secondary {
+            background: #3a2a70;
+            color: #fff;
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        #tutorial button:hover {
+            filter: brightness(1.1);
+        }
+
+        /* ============ MOBILE / TOUCH CONTROLS ============ */
+        body.is-mobile,
+        body.is-mobile #c {
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+
+        body.is-mobile #crosshair {
+            display: none;
+        }
+
+        body.is-mobile #hint {
+            bottom: 168px;
+            font-size: 16px;
+        }
+
+        #lookZone {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 62%;
+            height: 100%;
+            z-index: 12;
+            display: none;
+            touch-action: none;
+        }
+
+        body.is-mobile #lookZone {
+            display: block;
+        }
+
+        #joystickBase {
+            position: fixed;
+            left: 26px;
+            bottom: 26px;
+            width: 116px;
+            height: 116px;
+            border-radius: 50%;
+            border: 3px solid #6b46ff;
+            background: rgba(107, 70, 255, 0.14);
+            z-index: 14;
+            display: none;
+            touch-action: none;
+        }
+
+        body.is-mobile #joystickBase {
+            display: block;
+        }
+
+        #joystickThumb {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 48px;
+            height: 48px;
+            margin: -24px;
+            border-radius: 50%;
+            background: rgba(255, 217, 74, 0.85);
+            border: 2px solid #000;
+            pointer-events: none;
+        }
+
+        #mobileButtons {
+            position: fixed;
+            right: 22px;
+            bottom: 26px;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 14;
+        }
+
+        body.is-mobile #mobileButtons {
+            display: flex;
+        }
+
+        .mBtn {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 3px solid #ffd94a;
+            background: rgba(10, 5, 25, 0.6);
+            color: #ffd94a;
+            font-family: "Press Start 2P";
+            font-size: 9px;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .mBtn:active {
+            background: rgba(255, 217, 74, 0.3);
+        }
+
+        #archiveBtn {
+            position: fixed;
+            top: 16px;
+            left: 64px;
+            width: 38px;
+            height: 38px;
+            background: rgba(10, 5, 25, 0.6);
+            border: 2px solid #7dffe0;
+            color: #7dffe0;
+            font-size: 16px;
+            z-index: 16;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.is-mobile #archiveBtn {
+            display: flex;
+        }
+
+        body.is-mobile #zoneLabel {
+            font-size: 10px;
+            padding: 6px 12px;
+        }
+
+        body.is-mobile #counter {
+            font-size: 9px;
+            padding: 6px 9px;
+        }
+
+        body.is-mobile #achCounter {
+            font-size: 8px;
+            padding: 5px 9px;
+            top: 52px;
+        }
+
+        body.is-mobile #modal .card {
+            padding: 20px 18px;
+        }
+
+        body.is-mobile #modal h3 {
+            font-size: 13px;
+        }
+
+        body.is-mobile #modal p {
+            font-size: 19px;
+        }
+
+        body.is-mobile #settingsPanel {
+            width: min(250px, 70vw);
+        }
+    </style>
+    </style type="text/css" media="all">
+        body{
+  padding: 25px;
+}
+.title {
+	color: #5C6AC4;
+}
+    </style>
+    <script type="text/javascript" charset="utf-8">
+        function showTime() {
+	document.getElementById('currentTime').innerHTML = new Date().toUTCString();
+}
+showTime();
+setInterval(function () {
+	showTime();
+}, 1000);
+    </script>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <div id="crosshair"></div>
+    <div id="hint">[F] INTERACT</div>
+    <div id="zoneLabel"></div>
+    <div id="counter">0 / 0 FOUND</div>
+    <div id="achCounter">0 / 0 ACHIEVEMENTS</div>
+    <div id="toast"></div>
+    <button id="gearBtn">&#9881;</button>
+    <button id="archiveBtn">&#128214;</button>
+
+    <div id="lookZone"></div>
+    <div id="joystickBase">
+        <div id="joystickThumb"></div>
+    </div>
+    <div id="mobileButtons">
+        <div class="mBtn" id="jumpBtn">JUMP</div>
+        <div class="mBtn" id="interactBtn">[F]<br>INTERACT</div>
+    </div>
+
+    <div id="settingsPanel">
+        <h3>SETTINGS</h3>
+        <label>
+            Look Sensitivity:
+            <span id="sensVal">1.0x</span>
+        </label>
+        <input type="range" id="sensSlider" min="0.3" max="2" step="0.1" value="1">
+        <label>
+            Music Volume:
+            <span id="musicVal">35%</span>
+        </label>
+        <input type="range" id="musicSlider" min="0" max="1" step="0.05" value="0.35">
+        <label>
+            SFX Volume:
+            <span id="sfxVal">60%</span>
+        </label>
+        <input type="range" id="sfxSlider" min="0" max="1" step="0.05" value="0.6">
+        <button id="replayTutorial">HOW TO PLAY</button>
+    </div>
+
+    <div id="toolbar">
+        <h2>
+            MUSEUM
+            <br>
+            ARCHIVE
+        </h2>
+        <h3 style="color: #7dffe0">ACHIEVEMENTS</h3>
+        <div id="achList"></div>
+        <h3 style="color: #ffd94a">EXHIBITS</h3>
+        <div id="entries"></div>
+    </div>
+
+    <div id="modal">
+        <div class="card">
+            <div class="cat" id="mCat">WING</div>
+            <h3 id="mTitle">EXHIBIT</h3>
+            <p id="mDesc"></p>
+            <button id="mClose">CLOSE [F]</button>
+        </div>
+    </div>
+
+    <div id="tutorial">
+        <div class="slideBody" id="slideBody"></div>
+        <div class="dots" id="dots"></div>
+        <div class="navRow" id="navRow"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        /* ============ DEVICE DETECTION ============ */
+        function detectMobile() {
+            const uaMobile = /Android|iPhone|iPod|Mobile|Windows Phone/i.test(navigator.userAgent);
+            // iPadOS 13+ reports its UA as a Mac, so detect it via multi-touch support instead.
+            const iPadOS = /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+            if (uaMobile || iPadOS) return true;
+
+            const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+            if (!hasTouch) return false;
+
+            // A device's PRIMARY pointer is what matters, not just "has a touchscreen".
+            // Touch-screen laptops report hasTouch=true but their primary pointer is
+            // still a fine mouse/trackpad, so pointer:coarse will be false for them.
+            const primaryIsCoarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+            const primaryIsFine = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+            return primaryIsCoarse && !primaryIsFine;
+        }
+        const IS_MOBILE = detectMobile();
+        if (IS_MOBILE) document.body.classList.add("is-mobile");
+
+        /* ============ DATA ============ */
+        const WINGS = [{
+                key: "SCALE",
+                label: "SCALE OF THE UNIVERSE",
+                color: 0x55ff9d,
+                items: [{
+                        name: "PLANCK LENGTH",
+                        shape: "point",
+                        desc: "The smallest meaningful length in physics - about 0.000...016 meters, with 34 zeros. Nothing smaller has any known meaning.",
+                    },
+                    {
+                        name: "STRING (STRING THEORY)",
+                        shape: "point",
+                        desc: "A theoretical idea that tiny vibrating strings, smaller than any known particle, might be the true basic building blocks of everything.",
+                    },
+                    {
+                        name: "QUARK",
+                        shape: "point",
+                        desc: "One of the smallest known building blocks of matter. Protons and neutrons are each made from three quarks.",
+                    },
+                    {
+                        name: "ELECTRON",
+                        shape: "point",
+                        desc: "A tiny, negatively-charged particle that orbits the nucleus of every atom.",
+                    },
+                    {
+                        name: "PHOTON",
+                        shape: "point",
+                        desc: "A tiny packet of light energy - the fundamental particle that carries all light and radiation.",
+                    },
+                    {
+                        name: "PROTON",
+                        shape: "sphere",
+                        desc: "A positively-charged particle found in the nucleus at the center of every atom.",
+                    },
+                    {
+                        name: "NEUTRON",
+                        shape: "sphere",
+                        desc: "A neutral particle that sits in an atom's nucleus alongside protons.",
+                    },
+                    {
+                        name: "ATOM",
+                        shape: "atom",
+                        desc: "The basic unit of matter. Every material in the universe is built from atoms combining together.",
+                    },
+                    {
+                        name: "AMINO ACID",
+                        shape: "point",
+                        desc: "Small molecules that link together to build proteins, the workhorses of every cell.",
+                    },
+                    {
+                        name: "WATER MOLECULE",
+                        shape: "crystal",
+                        desc: "Two hydrogen atoms bonded to one oxygen atom - the molecule that makes up every drop of water.",
+                    },
+                    {
+                        name: "PROTEIN",
+                        shape: "crystal",
+                        desc: "A large folded molecule built from chains of amino acids that carries out most jobs inside a cell.",
+                    },
+                    {
+                        name: "DNA STRAND",
+                        shape: "helix",
+                        desc: "A twisted double-helix molecule that carries the instructions for building every living thing.",
+                    },
+                    {
+                        name: "VIRUS",
+                        shape: "virusspiky",
+                        desc: "Even smaller than bacteria, a virus must invade a living cell in order to reproduce.",
+                    },
+                    {
+                        name: "BACTERIUM",
+                        shape: "capsule",
+                        desc: "A single-celled organism found everywhere on Earth - some help us, some can make us sick.",
+                    },
+                    {
+                        name: "HUMAN CELL",
+                        shape: "sphere",
+                        desc: "The basic building block of your body. An adult human is made of trillions of them.",
+                    },
+                    {
+                        name: "POLLEN GRAIN",
+                        shape: "point",
+                        desc: "A tiny grain plants use to reproduce, often carried by wind or insects.",
+                    },
+                    {
+                        name: "GRAIN OF SAND",
+                        shape: "box",
+                        desc: "A tiny fragment of rock, roughly a million times bigger than a typical bacterium.",
+                    },
+                    {
+                        name: "SNOWFLAKE",
+                        shape: "crystal",
+                        desc: "An ice crystal with a unique six-sided pattern - no two are exactly alike.",
+                    },
+                    {
+                        name: "ANT",
+                        shape: "sphere",
+                        desc: "A small insect that can lift many times its own body weight."
+                    },
+                    {
+                        name: "HUMAN HAIR (WIDTH)",
+                        shape: "disc",
+                        desc: "A single strand of hair is about 1,000 times wider than a typical virus.",
+                    },
+                    {
+                        name: "HONEYBEE",
+                        shape: "sphere",
+                        desc: "A small flying insect responsible for pollinating a huge share of the world's crops.",
+                    },
+                    {
+                        name: "HUMAN BEING",
+                        shape: "crystal",
+                        desc: "An adult human is roughly a million times taller than a single bacterium.",
+                    },
+                    {
+                        name: "BLUE WHALE",
+                        shape: "whale",
+                        desc: "The largest animal ever known to have lived on planet Earth.",
+                    },
+                    {
+                        name: "MOUNTAIN RANGE (HIMALAYAS)",
+                        shape: "cone",
+                        desc: "A massive mountain chain formed where two continents slowly crashed together.",
+                    },
+                    {
+                        name: "MOUNT EVEREST",
+                        shape: "cone",
+                        desc: "The tallest mountain above sea level, rising about 8.8 kilometers high.",
+                    },
+                    {
+                        name: "MARIANA TRENCH",
+                        shape: "ring",
+                        desc: "The deepest known point in Earth's oceans, plunging close to 11 kilometers down.",
+                    },
+                    {
+                        name: "CONTINENT",
+                        shape: "disc",
+                        desc: "A vast landmass - Earth has seven, from tiny Australia to giant Asia.",
+                    },
+                    {
+                        name: "THE MOON",
+                        shape: "sphere",
+                        desc: "Earth's only natural satellite, about a quarter of Earth's diameter.",
+                    },
+                    {
+                        name: "PLANET EARTH",
+                        shape: "moonorbit",
+                        desc: "Our home planet - the only place we know of so far that supports life.",
+                    },
+                    {
+                        name: "JUPITER",
+                        shape: "sphere",
+                        desc: "So large that roughly 1,300 Earths could fit inside it."
+                    },
+                    {
+                        name: "THE SUN",
+                        shape: "sphere",
+                        desc: "About 1.3 million Earths could fit inside our home star."
+                    },
+                    {
+                        name: "THE SOLAR SYSTEM",
+                        shape: "ring",
+                        desc: "The Sun and everything that orbits it, stretching billions of kilometers across.",
+                    },
+                    {
+                        name: "NEAREST STAR (PROXIMA CENTAURI)",
+                        shape: "sphere",
+                        desc: "The closest known star to our Sun, still over 4 light-years away.",
+                    },
+                    {
+                        name: "RED GIANT STAR",
+                        shape: "sphere",
+                        desc: "A star nearing the end of its life, swelling to many times its original size.",
+                    },
+                    {
+                        name: "THE MILKY WAY GALAXY",
+                        shape: "disc",
+                        desc: "Our home galaxy, home to an estimated 100 to 400 billion stars.",
+                    },
+                    {
+                        name: "LOCAL GALAXY GROUP",
+                        shape: "crystal",
+                        desc: "A cluster of dozens of galaxies, including the Milky Way, bound together by gravity.",
+                    },
+                    {
+                        name: "GALAXY CLUSTER",
+                        shape: "crystal",
+                        desc: "A huge group of galaxies bound together by gravity - among the largest structures known in the universe.",
+                    },
+                    {
+                        name: "NEUTRINO",
+                        shape: "point",
+                        desc: "An almost massless particle that passes through nearly all matter, including your body, by the trillions every second.",
+                    },
+                    {
+                        name: "HIGGS BOSON",
+                        shape: "point",
+                        desc: "A particle discovered in 2012 that helps explain why other particles have mass.",
+                    },
+                    {
+                        name: "NANOPARTICLE",
+                        shape: "point",
+                        desc: "An engineered particle so small that thousands could fit across the width of a human hair.",
+                    },
+                    {
+                        name: "RED BLOOD CELL",
+                        shape: "disc",
+                        desc: "One of the smallest cells in the human body, shaped like a flattened disc to carry oxygen efficiently.",
+                    },
+                    {
+                        name: "SKYSCRAPER (BURJ KHALIFA)",
+                        shape: "cone",
+                        desc: "The world's tallest building, standing over 828 meters high.",
+                    },
+                    {
+                        name: "A CITY",
+                        shape: "disc",
+                        desc: "A vast built-up area where millions of people can live and work together.",
+                    },
+                    {
+                        name: "A COUNTRY",
+                        shape: "disc",
+                        desc: "A large defined territory - Russia, the biggest country, spans 11 time zones.",
+                    },
+                    {
+                        name: "EARTH'S ATMOSPHERE",
+                        shape: "ring",
+                        desc: "A thin layer of gases wrapping around Earth, protecting life below from harmful radiation.",
+                    },
+                    {
+                        name: "THE OZONE LAYER",
+                        shape: "ring",
+                        desc: "A protective layer high in the atmosphere that blocks most of the Sun's harmful ultraviolet rays.",
+                    },
+                    {
+                        name: "LOCAL SUPERCLUSTER (LANIAKEA)",
+                        shape: "crystal",
+                        desc: "A colossal collection of over 100,000 galaxies, including our own Milky Way.",
+                    },
+                    {
+                        name: "THE COSMIC WEB",
+                        shape: "crystal",
+                        desc: "The largest known structure in the universe - a vast web of galaxy filaments stretching across space.",
+                    },
+                    {
+                        name: "A DROP OF WATER",
+                        shape: "sphere",
+                        desc: "Contains roughly 5 sextillion water molecules - an almost unimaginably large number for something so small.",
+                    },
+                    {
+                        name: "THE OBSERVABLE UNIVERSE",
+                        shape: "sphere",
+                        desc: "Stretches roughly 93 billion light-years across, and it's still expanding.",
+                    },
+                ],
+            },
+            {
+                key: "HISTORY",
+                label: "HISTORICAL EVENTS",
+                color: 0xffa64d,
+                items: [{
+                        name: "INVENTION OF WRITING - c. 3200 BCE",
+                        shape: "book",
+                        desc: "Ancient Sumerians developed one of the earliest writing systems, allowing history to finally be recorded.",
+                    },
+                    {
+                        name: "INVENTION OF THE WHEEL - c. 3500 BCE",
+                        shape: "ring",
+                        desc: "One of humanity's most important inventions, transforming transport and machinery forever.",
+                    },
+                    {
+                        name: "STONEHENGE BUILT - c. 3000 BCE",
+                        shape: "ring",
+                        desc: "A mysterious ring of massive standing stones in England, still puzzling historians today.",
+                    },
+                    {
+                        name: "FIRST OLYMPIC GAMES - 776 BCE",
+                        shape: "sphere",
+                        desc: "Ancient Greece held the first recorded Olympic Games in the city of Olympia.",
+                    },
+                    {
+                        name: "THE SILK ROAD OPENS - c. 130 BCE",
+                        shape: "box",
+                        desc: "A network of trade routes connecting Asia and Europe, spreading goods and ideas for centuries.",
+                    },
+                    {
+                        name: "FALL OF THE ROMAN EMPIRE - 476 CE",
+                        shape: "box",
+                        desc: "Marked the end of centuries of Roman rule across Western Europe.",
+                    },
+                    {
+                        name: "INVENTION OF PAPER - c. 105 CE",
+                        shape: "book",
+                        desc: "Ancient China developed paper, making writing and record-keeping far more practical.",
+                    },
+                    {
+                        name: "MAGNA CARTA - 1215",
+                        shape: "book",
+                        desc: "An English charter that limited the king's power, shaping modern ideas about rights and law.",
+                    },
+                    {
+                        name: "THE BLACK DEATH - 1347-1351",
+                        shape: "crystal",
+                        desc: "A devastating plague that swept through Europe and Asia, reshaping societies for generations.",
+                    },
+                    {
+                        name: "THE RENAISSANCE - 14th-17th century",
+                        shape: "crystal",
+                        desc: "A period of huge growth in art, science, and culture that swept across Europe.",
+                    },
+                    {
+                        name: "THE PRINTING PRESS - 1440s",
+                        shape: "book",
+                        desc: "Johannes Gutenberg's press made books fast and cheap to produce, spreading knowledge widely.",
+                    },
+                    {
+                        name: "GUTENBERG BIBLE PRINTED - 1455",
+                        shape: "book",
+                        desc: "One of the first major books ever produced using Gutenberg's printing press.",
+                    },
+                    {
+                        name: "GREAT PYRAMID OF GIZA - c. 2560 BCE",
+                        shape: "cone",
+                        desc: "Built as a tomb for Pharaoh Khufu, it was the tallest man-made structure for almost 4,000 years.",
+                    },
+                    {
+                        name: "COLUMBUS REACHES THE AMERICAS - 1492",
+                        shape: "box",
+                        desc: "This voyage connected Europe and the Americas, changing world history forever.",
+                    },
+                    {
+                        name: "FIRST VACCINE - 1796",
+                        shape: "sphere",
+                        desc: "Edward Jenner created the first vaccine, protecting people against smallpox.",
+                    },
+                    {
+                        name: "FIRST STEAM ENGINE - 1712",
+                        shape: "box",
+                        desc: "An early machine that helped power the coming Industrial Revolution.",
+                    },
+                    {
+                        name: "INDUSTRIAL REVOLUTION - late 1700s",
+                        shape: "box",
+                        desc: "Machines and factories transformed how goods were made, changing daily life forever.",
+                    },
+                    {
+                        name: "DECLARATION OF INDEPENDENCE - 1776",
+                        shape: "book",
+                        desc: "American colonies formally declared independence from British rule.",
+                    },
+                    {
+                        name: "ABOLITION OF SLAVERY IN THE BRITISH EMPIRE - 1833",
+                        shape: "box",
+                        desc: "A landmark law that ended slavery across British colonies.",
+                    },
+                    {
+                        name: "TELEPHONE INVENTED - 1876",
+                        shape: "cone",
+                        desc: "Alexander Graham Bell patented the telephone, changing how people communicate across distance.",
+                    },
+                    {
+                        name: "FIRST OFFICIAL POWERED FLIGHT - 1903",
+                        shape: "rocket",
+                        desc: "The Wright brothers flew the first successful powered airplane, lasting just 12 seconds.",
+                    },
+                    {
+                        name: "TITANIC SINKS - 1912",
+                        shape: "box",
+                        desc: "The 'unsinkable' ship struck an iceberg on its first voyage and sank, leading to major safety reforms.",
+                    },
+                    {
+                        name: "FIRST TELEVISION BROADCASTS - 1920s-1930s",
+                        shape: "box",
+                        desc: "Television began bringing moving pictures into homes around the world.",
+                    },
+                    {
+                        name: "FIRST COMPUTER (ENIAC) - 1945",
+                        shape: "box",
+                        desc: "One of the earliest electronic computers, filling an entire room.",
+                    },
+                    {
+                        name: "END OF WORLD WAR II - 1945",
+                        shape: "ring",
+                        desc: "The deadliest conflict in history ended, reshaping borders and global politics for decades.",
+                    },
+                    {
+                        name: "SIGNING OF THE UN CHARTER - 1945",
+                        shape: "ring",
+                        desc: "Founded the United Nations to help maintain peace between countries.",
+                    },
+                    {
+                        name: "THE BERLIN AIRLIFT - 1948-1949",
+                        shape: "rocket",
+                        desc: "Allied planes flew supplies into West Berlin for nearly a year during a Soviet blockade.",
+                    },
+                    {
+                        name: "FIRST ARTIFICIAL SATELLITE (SPUTNIK) - 1957",
+                        shape: "rocket",
+                        desc: "The Soviet Union launched the first artificial satellite, kicking off the Space Age.",
+                    },
+                    {
+                        name: "MOON LANDING - 1969",
+                        shape: "moonorbit",
+                        desc: "Apollo 11's Neil Armstrong became the first human to step on the Moon, watched live by millions.",
+                    },
+                    {
+                        name: "FIRST MESSAGE ON THE INTERNET - 1969",
+                        shape: "ring",
+                        desc: "ARPANET sent its first message between two computers, planting the seed for today's internet.",
+                    },
+                    {
+                        name: "FALL OF THE BERLIN WALL - 1989",
+                        shape: "box",
+                        desc: "The wall dividing East and West Berlin came down, becoming a symbol of the Cold War's end.",
+                    },
+                    {
+                        name: "WORLD WIDE WEB INVENTED - 1989",
+                        shape: "ring",
+                        desc: "Tim Berners-Lee proposed the web, turning the internet into something anyone could browse.",
+                    },
+                    {
+                        name: "FIRST IPHONE - 2007",
+                        shape: "box",
+                        desc: "Apple's first iPhone helped kick off the smartphone era that changed how the world communicates.",
+                    },
+                    {
+                        name: "DOMESTICATION OF FIRE - c. 1,000,000 years ago",
+                        shape: "crystal",
+                        desc: "Early humans learned to control fire, transforming cooking, warmth, and safety.",
+                    },
+                    {
+                        name: "AGRICULTURAL REVOLUTION - c. 10,000 BCE",
+                        shape: "box",
+                        desc: "Humans began farming instead of only hunting and gathering, leading to permanent settlements.",
+                    },
+                    {
+                        name: "CODE OF HAMMURABI - c. 1754 BCE",
+                        shape: "book",
+                        desc: "One of the earliest known written law codes, carved onto a large stone pillar.",
+                    },
+                    {
+                        name: "THE TROJAN WAR (LEGENDARY) - c. 1200 BCE",
+                        shape: "crystal",
+                        desc: "A legendary conflict from ancient Greek stories, later inspiring centuries of art and literature.",
+                    },
+                    {
+                        name: "THE GREAT WALL OF CHINA BEGINS - c. 7th century BCE",
+                        shape: "box",
+                        desc: "Constructed over centuries to protect Chinese states from invasions.",
+                    },
+                    {
+                        name: "ALEXANDER THE GREAT'S CONQUESTS - 4th century BCE",
+                        shape: "crystal",
+                        desc: "A young king built one of the largest empires of the ancient world before the age of 30.",
+                    },
+                    {
+                        name: "THE ROSETTA STONE DISCOVERED - 1799",
+                        shape: "book",
+                        desc: "Helped scholars finally decode ancient Egyptian hieroglyphics.",
+                    },
+                    {
+                        name: "FRENCH REVOLUTION BEGINS - 1789",
+                        shape: "box",
+                        desc: "Overthrew the French monarchy and reshaped ideas about democracy and rights.",
+                    },
+                    {
+                        name: "FIRST PHOTOGRAPH EVER TAKEN - 1826",
+                        shape: "box",
+                        desc: "Joseph Nicephore Niepce captured the first permanent photographic image.",
+                    },
+                    {
+                        name: "THE GETTYSBURG ADDRESS - 1863",
+                        shape: "book",
+                        desc: "A short, powerful speech during the American Civil War that reshaped ideas about equality.",
+                    },
+                    {
+                        name: "THE WOMEN'S SUFFRAGE MOVEMENT - late 1800s-1900s",
+                        shape: "crystal",
+                        desc: "A long struggle that won women the right to vote in many countries.",
+                    },
+                    {
+                        name: "FIRST RADIO BROADCAST - 1906",
+                        shape: "cone",
+                        desc: "Early radio transmissions began carrying voices and music through the air for the first time.",
+                    },
+                    {
+                        name: "THE PANAMA CANAL OPENS - 1914",
+                        shape: "ring",
+                        desc: "A massive engineering project connecting the Atlantic and Pacific Oceans.",
+                    },
+                    {
+                        name: "DISCOVERY OF TUTANKHAMUN'S TOMB - 1922",
+                        shape: "box",
+                        desc: "Howard Carter's discovery revealed a nearly untouched ancient Egyptian burial chamber.",
+                    },
+                    {
+                        name: "THE CIVIL RIGHTS MOVEMENT - 1950s-1960s",
+                        shape: "crystal",
+                        desc: "A major push in the United States to end racial segregation and secure equal rights.",
+                    },
+                    {
+                        name: "FALL OF THE SOVIET UNION - 1991",
+                        shape: "box",
+                        desc: "One of the largest countries in history dissolved into 15 separate nations.",
+                    },
+                    {
+                        name: "INVENTION OF GPS - widespread by 1990s",
+                        shape: "ring",
+                        desc: "A satellite-based system that lets devices pinpoint their exact location anywhere on Earth.",
+                    },
+                ],
+            },
+            {
+                key: "MICRO",
+                label: "MICROBIOLOGY",
+                color: 0x4ddbff,
+                items: [{
+                        name: "THE MICROSCOPE - 1590s",
+                        shape: "cone",
+                        desc: "Early microscopes let humans see cells and microbes for the very first time.",
+                    },
+                    {
+                        name: "CELLS",
+                        shape: "sphere",
+                        desc: "The building blocks of all living things. An adult human body is made of trillions of them.",
+                    },
+                    {
+                        name: "THE CELL NUCLEUS",
+                        shape: "sphere",
+                        desc: "The control center of a cell, holding its DNA."
+                    },
+                    {
+                        name: "MITOCHONDRIA",
+                        shape: "capsule",
+                        desc: "Tiny structures inside cells that produce the energy a cell needs to function.",
+                    },
+                    {
+                        name: "LYSOSOMES",
+                        shape: "sphere",
+                        desc: "Cell structures packed with enzymes that break down waste and worn-out parts.",
+                    },
+                    {
+                        name: "CHLOROPLASTS",
+                        shape: "sphere",
+                        desc: "Structures inside plant cells that capture sunlight to make food through photosynthesis.",
+                    },
+                    {
+                        name: "RIBOSOMES",
+                        shape: "point",
+                        desc: "Tiny cell structures that build proteins by reading genetic instructions.",
+                    },
+                    {
+                        name: "DNA",
+                        shape: "helix",
+                        desc: "The twisted-ladder molecule carrying the instructions for building and running every living thing.",
+                    },
+                    {
+                        name: "TELOMERES",
+                        shape: "helix",
+                        desc: "Protective caps on the ends of DNA strands that shorten a little every time a cell divides.",
+                    },
+                    {
+                        name: "BACTERIA",
+                        shape: "capsule",
+                        desc: "Single-celled organisms found everywhere - some help us digest food, others can make us sick.",
+                    },
+                    {
+                        name: "BIOFILMS",
+                        shape: "capsule",
+                        desc: "Sticky communities of bacteria that cling together on surfaces for protection.",
+                    },
+                    {
+                        name: "VIRUSES",
+                        shape: "virusspiky",
+                        desc: "Even smaller than bacteria, a virus needs to invade a living cell in order to reproduce.",
+                    },
+                    {
+                        name: "PRIONS",
+                        shape: "point",
+                        desc: "Misfolded proteins that can cause disease by making other proteins misfold too.",
+                    },
+                    {
+                        name: "FUNGI",
+                        shape: "crystal",
+                        desc: "A kingdom of life including yeast and mold - some helpful to us, some harmful.",
+                    },
+                    {
+                        name: "YEAST",
+                        shape: "sphere",
+                        desc: "A microscopic fungus used for thousands of years to make bread rise and drinks ferment.",
+                    },
+                    {
+                        name: "PROTOZOA",
+                        shape: "capsule",
+                        desc: "Single-celled microorganisms that can move around and hunt for food.",
+                    },
+                    {
+                        name: "RED BLOOD CELLS",
+                        shape: "disc",
+                        desc: "Disc-shaped cells that make up to 2 million new copies of themselves every second in your body.",
+                    },
+                    {
+                        name: "WHITE BLOOD CELLS",
+                        shape: "sphere",
+                        desc: "Patrol the body and attack invading germs as part of the immune system.",
+                    },
+                    {
+                        name: "ANTIBODIES",
+                        shape: "crystal",
+                        desc: "Y-shaped proteins made by your immune system that recognize and lock onto specific invaders.",
+                    },
+                    {
+                        name: "ENZYMES",
+                        shape: "crystal",
+                        desc: "Special proteins that speed up chemical reactions inside living things.",
+                    },
+                    {
+                        name: "STEM CELLS",
+                        shape: "sphere",
+                        desc: "Special cells that can develop into many different types of cells in the body.",
+                    },
+                    {
+                        name: "VACCINES",
+                        shape: "sphere",
+                        desc: "Train the immune system to recognize a threat before ever encountering the real disease.",
+                    },
+                    {
+                        name: "PROBIOTICS",
+                        shape: "capsule",
+                        desc: "Helpful live bacteria found in foods like yogurt that support gut health.",
+                    },
+                    {
+                        name: "PENICILLIN - 1928",
+                        shape: "crystal",
+                        desc: "Alexander Fleming discovered this antibiotic by accident, kicking off a medical revolution.",
+                    },
+                    {
+                        name: "ANTIBIOTIC RESISTANCE",
+                        shape: "virusspiky",
+                        desc: "When bacteria evolve over time to survive medicines that used to kill them.",
+                    },
+                    {
+                        name: "GUT MICROBIOME",
+                        shape: "capsule",
+                        desc: "Trillions of bacteria living in your intestines that help you digest food.",
+                    },
+                    {
+                        name: "PASTEURIZATION",
+                        shape: "box",
+                        desc: "A heating process invented by Louis Pasteur that kills harmful microbes in food and drink.",
+                    },
+                    {
+                        name: "GERM THEORY",
+                        shape: "crystal",
+                        desc: "The scientific idea that many diseases are caused by tiny microbes - a huge breakthrough in medicine.",
+                    },
+                    {
+                        name: "THE PETRI DISH - invented 1887",
+                        shape: "disc",
+                        desc: "A shallow dish scientists use to grow and study microbes in a lab.",
+                    },
+                    {
+                        name: "MICROBIAL SPORES",
+                        shape: "point",
+                        desc: "Tough, dormant forms some bacteria and fungi use to survive harsh conditions for years.",
+                    },
+                    {
+                        name: "PCR TESTING",
+                        shape: "box",
+                        desc: "A lab technique that copies tiny bits of DNA millions of times over so it can be detected.",
+                    },
+                    {
+                        name: "CRISPR GENE EDITING",
+                        shape: "helix",
+                        desc: "A modern tool that lets scientists precisely edit sections of DNA.",
+                    },
+                    {
+                        name: "THE HUMAN GENOME PROJECT - completed 2003",
+                        shape: "helix",
+                        desc: "A massive scientific effort that mapped nearly all of human DNA.",
+                    },
+                    {
+                        name: "THE CELL THEORY - 1839",
+                        shape: "crystal",
+                        desc: "The scientific idea that all living things are made of cells, proposed by Schleiden and Schwann.",
+                    },
+                    {
+                        name: "HAEMOGLOBIN",
+                        shape: "sphere",
+                        desc: "The protein in red blood cells that carries oxygen throughout the body.",
+                    },
+                    {
+                        name: "THE CELL MEMBRANE",
+                        shape: "ring",
+                        desc: "A thin protective barrier controlling what enters and leaves a cell.",
+                    },
+                    {
+                        name: "GOLGI APPARATUS",
+                        shape: "disc",
+                        desc: "A cell structure that packages and ships proteins to where they're needed.",
+                    },
+                    {
+                        name: "ENDOPLASMIC RETICULUM",
+                        shape: "helix",
+                        desc: "A network inside cells that helps build and transport proteins and fats.",
+                    },
+                    {
+                        name: "ALGAE",
+                        shape: "sphere",
+                        desc: "Simple aquatic organisms that produce a large share of the world's oxygen.",
+                    },
+                    {
+                        name: "AMOEBA",
+                        shape: "capsule",
+                        desc: "A single-celled organism that moves and feeds by constantly changing its shape.",
+                    },
+                    {
+                        name: "PARASITES",
+                        shape: "virusspiky",
+                        desc: "Organisms that live on or inside a host, depending on it for survival, sometimes causing harm.",
+                    },
+                    {
+                        name: "THE FLU VIRUS",
+                        shape: "virusspiky",
+                        desc: "Changes slightly every year, which is why new flu vaccines are needed each season.",
+                    },
+                    {
+                        name: "E. COLI",
+                        shape: "capsule",
+                        desc: "One of the most studied bacteria, normally harmless and found in the gut, though some strains cause illness.",
+                    },
+                    {
+                        name: "SALMONELLA",
+                        shape: "capsule",
+                        desc: "A bacteria that can cause food poisoning if food isn't cooked or stored properly.",
+                    },
+                    {
+                        name: "MOLD",
+                        shape: "crystal",
+                        desc: "A type of fungus that grows in fuzzy patches, sometimes used to make foods like cheese.",
+                    },
+                    {
+                        name: "THE DISCOVERY OF CELLS - 1665",
+                        shape: "box",
+                        desc: "Robert Hooke first used the word 'cell' after examining thin slices of cork under a microscope.",
+                    },
+                    {
+                        name: "LOUIS PASTEUR'S GERM EXPERIMENTS - 1860s",
+                        shape: "crystal",
+                        desc: "Helped prove that germs, not 'spontaneous generation,' cause disease and spoilage.",
+                    },
+                    {
+                        name: "THE BCG VACCINE - 1921",
+                        shape: "sphere",
+                        desc: "One of the oldest vaccines still used today, protecting against tuberculosis.",
+                    },
+                    {
+                        name: "MRNA VACCINES",
+                        shape: "helix",
+                        desc: "A newer type of vaccine that teaches cells to make a harmless piece of a virus to train immunity.",
+                    },
+                    {
+                        name: "EXTREMOPHILES",
+                        shape: "capsule",
+                        desc: "Microbes that thrive in extreme conditions, like boiling hot springs or freezing ice.",
+                    },
+                ],
+            },
+            {
+                key: "SPACE",
+                label: "ASTRONOMY",
+                color: 0x8a6bff,
+                items: [{
+                        name: "MERCURY",
+                        shape: "sphere",
+                        desc: "The smallest planet in our solar system, and the fastest to orbit the Sun.",
+                    },
+                    {
+                        name: "VENUS",
+                        shape: "sphere",
+                        desc: "The hottest planet in our solar system, thanks to a thick, heat-trapping atmosphere.",
+                    },
+                    {
+                        name: "PLANET EARTH",
+                        shape: "moonorbit",
+                        desc: "Our home planet - the only place we know of so far that supports life.",
+                    },
+                    {
+                        name: "MARS",
+                        shape: "sphere",
+                        desc: "Home to Olympus Mons, the largest volcano in the solar system - nearly 3 times taller than Mount Everest.",
+                    },
+                    {
+                        name: "THE ASTEROID BELT",
+                        shape: "crystal",
+                        desc: "A region between Mars and Jupiter filled with rocky leftovers from the solar system's formation.",
+                    },
+                    {
+                        name: "JUPITER",
+                        shape: "sphere",
+                        desc: "The largest planet in our solar system - about 1,300 Earths could fit inside it.",
+                    },
+                    {
+                        name: "SATURN'S RINGS",
+                        shape: "ringedplanet",
+                        desc: "Made of countless chunks of ice and rock, some as small as dust and others as large as houses.",
+                    },
+                    {
+                        name: "URANUS",
+                        shape: "sphere",
+                        desc: "Rotates on its side compared to the other planets, likely from an ancient collision.",
+                    },
+                    {
+                        name: "NEPTUNE",
+                        shape: "sphere",
+                        desc: "The windiest planet known, with storms reaching over 2,000 km per hour.",
+                    },
+                    {
+                        name: "PLUTO",
+                        shape: "sphere",
+                        desc: "Once called the ninth planet, now classified as a dwarf planet."
+                    },
+                    {
+                        name: "THE KUIPER BELT",
+                        shape: "ring",
+                        desc: "A ring of icy bodies beyond Neptune, home to Pluto and many other small worlds.",
+                    },
+                    {
+                        name: "COMETS",
+                        shape: "rocket",
+                        desc: "Icy bodies that grow bright tails of gas and dust as they travel near the Sun.",
+                    },
+                    {
+                        name: "THE OORT CLOUD",
+                        shape: "ring",
+                        desc: "A distant, icy shell surrounding the solar system, believed to be the source of many comets.",
+                    },
+                    {
+                        name: "SPEED OF LIGHT",
+                        shape: "point",
+                        desc: "Light travels about 300,000 km every second - fast enough to circle Earth 7 times in one second.",
+                    },
+                    {
+                        name: "THE SUN",
+                        shape: "sphere",
+                        desc: "Our home star, so large that about 1.3 million Earths could fit inside it.",
+                    },
+                    {
+                        name: "SOLAR FLARES",
+                        shape: "virusspiky",
+                        desc: "Sudden bursts of energy from the Sun's surface that can affect satellites on Earth.",
+                    },
+                    {
+                        name: "SUPERNOVA",
+                        shape: "virusspiky",
+                        desc: "The explosive death of a massive star, briefly outshining an entire galaxy.",
+                    },
+                    {
+                        name: "WHITE DWARFS",
+                        shape: "sphere",
+                        desc: "The dense, leftover core of a star like our Sun after it runs out of fuel.",
+                    },
+                    {
+                        name: "RED DWARF STARS",
+                        shape: "sphere",
+                        desc: "The most common type of star in the universe, smaller and cooler than our Sun.",
+                    },
+                    {
+                        name: "NEUTRON STARS",
+                        shape: "sphere",
+                        desc: "So dense that a single teaspoon of their material would weigh billions of tons on Earth.",
+                    },
+                    {
+                        name: "BLACK HOLES",
+                        shape: "ring",
+                        desc: "Regions where gravity is so intense that not even light can escape their pull.",
+                    },
+                    {
+                        name: "GRAVITATIONAL WAVES",
+                        shape: "ring",
+                        desc: "Ripples in space-time caused by massive cosmic events like colliding black holes.",
+                    },
+                    {
+                        name: "THE AURORA (NORTHERN LIGHTS)",
+                        shape: "ring",
+                        desc: "Glowing lights in the sky caused by particles from the Sun colliding with Earth's atmosphere.",
+                    },
+                    {
+                        name: "TIDAL LOCKING",
+                        shape: "moonorbit",
+                        desc: "Why the Moon always shows the same face to Earth - its rotation is locked to its orbit.",
+                    },
+                    {
+                        name: "DARK MATTER",
+                        shape: "crystal",
+                        desc: "An invisible substance thought to make up much of the universe's mass, detected only through its gravity.",
+                    },
+                    {
+                        name: "THE MILKY WAY GALAXY",
+                        shape: "disc",
+                        desc: "Our home galaxy, holding an estimated 100 to 400 billion stars.",
+                    },
+                    {
+                        name: "THE ANDROMEDA GALAXY",
+                        shape: "disc",
+                        desc: "Our closest large galactic neighbor, on a slow collision course with the Milky Way.",
+                    },
+                    {
+                        name: "THE VOYAGER PROBES - launched 1977",
+                        shape: "rocket",
+                        desc: "Twin spacecraft that have traveled farther from Earth than any other human-made object.",
+                    },
+                    {
+                        name: "THE HUBBLE SPACE TELESCOPE - 1990",
+                        shape: "rocket",
+                        desc: "Launched in 1990, it has captured some of the most detailed images of deep space ever taken.",
+                    },
+                    {
+                        name: "THE JAMES WEBB SPACE TELESCOPE - 2021",
+                        shape: "rocket",
+                        desc: "Launched in 2021, designed to peer further into the universe's past than any telescope before it.",
+                    },
+                    {
+                        name: "SPACE JUNK",
+                        shape: "box",
+                        desc: "Old satellites and debris that now orbit Earth, tracked carefully to avoid collisions.",
+                    },
+                    {
+                        name: "MULTIVERSE THEORY",
+                        shape: "crystal",
+                        desc: "An unproven idea in physics suggesting our universe might be just one of many.",
+                    },
+                    {
+                        name: "THE BIG BANG - c. 13.8 billion years ago",
+                        shape: "crystal",
+                        desc: "The leading scientific theory for how the universe began expanding from an extremely hot, dense point.",
+                    },
+                    {
+                        name: "TRANQUILITY BASE",
+                        shape: "moonorbit",
+                        desc: "The location on the Moon where Apollo 11 astronauts first landed in 1969.",
+                    },
+                    {
+                        name: "LUNAR ECLIPSES",
+                        shape: "ring",
+                        desc: "Happen when Earth passes directly between the Sun and Moon, casting a shadow on the Moon.",
+                    },
+                    {
+                        name: "SOLAR ECLIPSES",
+                        shape: "ring",
+                        desc: "Occur when the Moon passes between Earth and the Sun, briefly blocking sunlight.",
+                    },
+                    {
+                        name: "THE ZODIAC CONSTELLATIONS",
+                        shape: "crystal",
+                        desc: "A band of star patterns ancient astronomers used to track the Sun's yearly path.",
+                    },
+                    {
+                        name: "THE NORTH STAR (POLARIS)",
+                        shape: "sphere",
+                        desc: "A star that stays nearly fixed in the sky, long used by travelers for navigation.",
+                    },
+                    {
+                        name: "METEOR SHOWERS",
+                        shape: "point",
+                        desc: "Happen when Earth passes through debris left behind by a comet, creating streaks of light.",
+                    },
+                    {
+                        name: "NAMING CELESTIAL OBJECTS",
+                        shape: "crystal",
+                        desc: "An international organization is responsible for officially naming planets and other space objects.",
+                    },
+                    {
+                        name: "SPACE SUITS",
+                        shape: "capsule",
+                        desc: "Specially designed suits that protect astronauts from the vacuum and temperature extremes of space.",
+                    },
+                    {
+                        name: "ZERO GRAVITY",
+                        shape: "sphere",
+                        desc: "The feeling of weightlessness astronauts experience while in free-fall around Earth.",
+                    },
+                    {
+                        name: "THE APOLLO PROGRAM",
+                        shape: "rocket",
+                        desc: "A series of NASA missions that landed twelve astronauts on the Moon between 1969 and 1972.",
+                    },
+                    {
+                        name: "THE SPACE SHUTTLE",
+                        shape: "rocket",
+                        desc: "A reusable spacecraft that carried astronauts and cargo to orbit from 1981 to 2011.",
+                    },
+                    {
+                        name: "MARS ROVERS",
+                        shape: "box",
+                        desc: "Robotic vehicles that explore the surface of Mars, searching for signs of past water or life.",
+                    },
+                    {
+                        name: "EXOPLANET KEPLER-186F",
+                        shape: "sphere",
+                        desc: "One of the first Earth-sized planets found orbiting in another star's habitable zone.",
+                    },
+                    {
+                        name: "THE COSMIC MICROWAVE BACKGROUND",
+                        shape: "ring",
+                        desc: "Leftover heat radiation from the early universe, discovered by accident in 1965.",
+                    },
+                    {
+                        name: "STAR CLUSTERS",
+                        shape: "crystal",
+                        desc: "Groups of stars born together from the same cloud of gas and dust.",
+                    },
+                    {
+                        name: "PULSARS",
+                        shape: "ring",
+                        desc: "Spinning neutron stars that sweep beams of radiation past Earth like a lighthouse.",
+                    },
+                    {
+                        name: "THE OBSERVABLE UNIVERSE",
+                        shape: "sphere",
+                        desc: "Stretches roughly 93 billion light-years across, and it's still expanding.",
+                    },
+                ],
+            },
+            {
+                key: "FUN",
+                label: "FUN FACTS",
+                color: 0xff6bcf,
+                items: [{
+                        name: "OCTOPUSES HAVE 3 HEARTS",
+                        shape: "crystal",
+                        desc: "Two pump blood to the gills, and one pumps it to the rest of the body.",
+                    },
+                    {
+                        name: "HONEY NEVER SPOILS",
+                        shape: "sphere",
+                        desc: "Archaeologists have found pots of honey thousands of years old that were still perfectly edible.",
+                    },
+                    {
+                        name: "BANANAS ARE BERRIES",
+                        shape: "capsule",
+                        desc: "Botanically speaking, bananas count as berries - but strawberries actually don't!",
+                    },
+                    {
+                        name: "PEANUTS AREN'T TRUE NUTS",
+                        shape: "box",
+                        desc: "They're actually legumes, related to beans and lentils.",
+                    },
+                    {
+                        name: "A DAY ON VENUS",
+                        shape: "sphere",
+                        desc: "A single day on Venus lasts longer than its entire year around the Sun.",
+                    },
+                    {
+                        name: "SHARKS PRE-DATE TREES",
+                        shape: "virusspiky",
+                        desc: "Sharks have existed for over 400 million years - trees showed up on Earth later.",
+                    },
+                    {
+                        name: "YOUR NOSE REMEMBERS",
+                        shape: "sphere",
+                        desc: "Humans can recognize and recall roughly 50,000 different scents.",
+                    },
+                    {
+                        name: "CUBE-SHAPED POOP",
+                        shape: "box",
+                        desc: "Wombats are the only known animal to produce cube-shaped droppings.",
+                    },
+                    {
+                        name: "BABIES HAVE EXTRA BONES",
+                        shape: "crystal",
+                        desc: "Babies are born with about 300 bones, but adults end up with only 206 as some fuse together.",
+                    },
+                    {
+                        name: "THE MPEMBA EFFECT",
+                        shape: "sphere",
+                        desc: "Under certain conditions, hot water can freeze faster than cold water - scientists still debate why.",
+                    },
+                    {
+                        name: "THE EIFFEL TOWER GROWS",
+                        shape: "cone",
+                        desc: "It can grow over 15cm taller in summer heat as its metal frame expands.",
+                    },
+                    {
+                        name: "A GROUP OF FLAMINGOS",
+                        shape: "sphere",
+                        desc: "Is called a 'flamboyance' - one of the most colorful collective animal names.",
+                    },
+                    {
+                        name: "A GROUP OF CROWS",
+                        shape: "sphere",
+                        desc: "Is called a 'murder' - one of the more dramatic collective animal names.",
+                    },
+                    {
+                        name: "SEA OTTERS HOLD HANDS",
+                        shape: "sphere",
+                        desc: "So they don't drift apart from each other while sleeping in the water.",
+                    },
+                    {
+                        name: "COWS HAVE BEST FRIENDS",
+                        shape: "sphere",
+                        desc: "Studies show cows form close bonds and get stressed when separated from them.",
+                    },
+                    {
+                        name: "WOODPECKERS DON'T GET HEADACHES",
+                        shape: "sphere",
+                        desc: "A special skull structure absorbs the shock of their rapid pecking.",
+                    },
+                    {
+                        name: "BUTTERFLIES TASTE WITH THEIR FEET",
+                        shape: "sphere",
+                        desc: "They have taste receptors on their feet to help find the right food plants.",
+                    },
+                    {
+                        name: "A SNAIL CAN SLEEP FOR YEARS",
+                        shape: "capsule",
+                        desc: "Some snails are able to hibernate for up to three years at a time.",
+                    },
+                    {
+                        name: "THE SHORTEST WAR IN HISTORY",
+                        shape: "box",
+                        desc: "Lasted only about 38 minutes, fought between Britain and Zanzibar in 1896.",
+                    },
+                    {
+                        name: "THE SHORTEST-REIGNING MONARCH",
+                        shape: "crystal",
+                        desc: "Louis XIX of France was king for only about 20 minutes before abdicating.",
+                    },
+                    {
+                        name: "YOUR STOMACH RELINES ITSELF",
+                        shape: "capsule",
+                        desc: "Your stomach lining is replaced every few days so it doesn't digest itself.",
+                    },
+                    {
+                        name: "HIPPOS' SWEAT IS RED",
+                        shape: "sphere",
+                        desc: "A natural substance protects their skin and doubles as a built-in sunscreen.",
+                    },
+                    {
+                        name: "LIGHTNING IS SUPER HOT",
+                        shape: "point",
+                        desc: "A single bolt of lightning can be hotter than the surface of the Sun.",
+                    },
+                    {
+                        name: "A SNEEZE CAN TRAVEL FAST",
+                        shape: "point",
+                        desc: "Droplets from a sneeze can travel over 150 km per hour.",
+                    },
+                    {
+                        name: "THE FRISBEE INVENTOR'S TRIBUTE",
+                        shape: "disc",
+                        desc: "After he passed away, the inventor of the modern frisbee had his ashes molded into memorial discs.",
+                    },
+                    {
+                        name: "THE INVENTION OF BUBBLE WRAP",
+                        shape: "box",
+                        desc: "Was originally designed in 1957 as a textured wallpaper before becoming packaging.",
+                    },
+                    {
+                        name: "TARDIGRADES SURVIVE SPACE",
+                        shape: "capsule",
+                        desc: "These tiny, tough creatures can survive being exposed directly to the vacuum of outer space.",
+                    },
+                    {
+                        name: "EARTH'S DAY WASN'T ALWAYS 24 HOURS",
+                        shape: "ring",
+                        desc: "Billions of years ago, a full day on Earth was only about 6 hours long.",
+                    },
+                    {
+                        name: "THE MOON IS DRIFTING AWAY",
+                        shape: "moonorbit",
+                        desc: "It moves about 3.8cm farther from Earth every year.",
+                    },
+                    {
+                        name: "CROWS REMEMBER FACES",
+                        shape: "sphere",
+                        desc: "They can recognize individual people and hold onto grudges for years.",
+                    },
+                    {
+                        name: "THE LONGEST-RUNNING EXPERIMENT",
+                        shape: "cone",
+                        desc: "A pitch-drop experiment in Australia has been running since 1927, watching tar-like pitch slowly drip.",
+                    },
+                    {
+                        name: "STARFISH DON'T HAVE BRAINS",
+                        shape: "crystal",
+                        desc: "They control movement using a network of nerves spread through their body instead.",
+                    },
+                    {
+                        name: "A CLOUD CAN WEIGH MILLIONS OF POUNDS",
+                        shape: "sphere",
+                        desc: "Even though it floats, a typical cumulus cloud can weigh over a million kilograms.",
+                    },
+                    {
+                        name: "A GROUP OF OWLS",
+                        shape: "sphere",
+                        desc: "Is called a 'parliament.'"
+                    },
+                    {
+                        name: "KOALAS SLEEP MOST OF THE DAY",
+                        shape: "sphere",
+                        desc: "They can sleep up to 20 hours a day to conserve energy from their low-nutrient diet.",
+                    },
+                    {
+                        name: "THE INVENTION OF POST-IT NOTES",
+                        shape: "box",
+                        desc: "Came from a glue that was originally considered a failure for not being sticky enough.",
+                    },
+                    {
+                        name: "A GIRAFFE'S TONGUE",
+                        shape: "capsule",
+                        desc: "Can be up to 50cm long and is dark blue-black to help prevent sunburn.",
+                    },
+                    {
+                        name: "THE SHORTEST COMMERCIAL FLIGHT",
+                        shape: "rocket",
+                        desc: "Connects two Scottish islands and can last under two minutes in the air.",
+                    },
+                    {
+                        name: "THE UNLUCKY 13TH FLOOR",
+                        shape: "crystal",
+                        desc: "Some buildings skip labeling a 13th floor due to old superstitions.",
+                    },
+                    {
+                        name: "YOUR HEART BEATS BILLIONS OF TIMES",
+                        shape: "sphere",
+                        desc: "Over an average lifetime, a human heart beats more than 2.5 billion times.",
+                    },
+                    {
+                        name: "WATER'S TRIPLE POINT",
+                        shape: "crystal",
+                        desc: "Under very specific conditions, water can be solid, liquid, and gas all at the same time.",
+                    },
+                    {
+                        name: "THE LONGEST WORD IN MAJOR DICTIONARIES",
+                        shape: "book",
+                        desc: "A chemical name for a protein that runs over 189,000 letters long.",
+                    },
+                    {
+                        name: "A HUMMINGBIRD'S HEART RATE",
+                        shape: "sphere",
+                        desc: "Can beat over 1,200 times per minute during flight.",
+                    },
+                    {
+                        name: "THE UNIVERSE HAS NO CENTER",
+                        shape: "crystal",
+                        desc: "Since the universe is expanding everywhere at once, there's no single point considered its middle.",
+                    },
+                    {
+                        name: "ICELAND HAS NO MOSQUITOES",
+                        shape: "sphere",
+                        desc: "One of the very few places on Earth where the insect hasn't managed to establish itself.",
+                    },
+                    {
+                        name: "A JIFFY IS A REAL UNIT OF TIME",
+                        shape: "point",
+                        desc: "In physics, a 'jiffy' can refer to an extremely short unit of time, not just an expression.",
+                    },
+                    {
+                        name: "THE EARTH ISN'T A PERFECT SPHERE",
+                        shape: "sphere",
+                        desc: "It bulges slightly at the equator due to its spin, making it what's called an oblate spheroid.",
+                    },
+                    {
+                        name: "OCTOPUSES CAN CHANGE COLOR INSTANTLY",
+                        shape: "crystal",
+                        desc: "Special skin cells let them blend into their surroundings in a fraction of a second.",
+                    },
+                    {
+                        name: "THE FASTEST GROWING PLANT",
+                        shape: "box",
+                        desc: "Some bamboo species can grow nearly a meter in a single day.",
+                    },
+                    {
+                        name: "A CROCODILE CAN'T STICK ITS TONGUE OUT",
+                        shape: "capsule",
+                        desc: "Its tongue is held in place by a membrane, unlike most other animals.",
+                    },
+                ],
+            },
+        ];
+
+        /* ============ RENDERER (chunky 32-bit-era 3D look) ============ */
+        const canvas = document.getElementById("c");
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        const PIX_SCALE = 0.5;
+
+        function sizeRenderer() {
+            const w = Math.max(150, Math.floor(window.innerWidth * PIX_SCALE));
+            const h = Math.max(112, Math.floor(window.innerHeight * PIX_SCALE));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0b0620);
+        const ROOM = 68;
+        scene.fog = new THREE.Fog(0x0b0620, 16, ROOM * 1.15);
+
+        const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 320);
+        camera.position.set(0, 1.7, 6);
+        window.addEventListener("resize", sizeRenderer);
+
+        /* ============ LIGHTING ============ */
+        scene.add(new THREE.AmbientLight(0x8888ff, 0.55));
+        const dl = new THREE.DirectionalLight(0xffffff, 0.65);
+        dl.position.set(10, 25, 10);
+        scene.add(dl);
+
+        /* ============ FLOOR / ROOM ============ */
+        function checkerTexture(c1, c2, size = 8) {
+            const cvs = document.createElement("canvas");
+            cvs.width = cvs.height = size;
+            const ctx = cvs.getContext("2d");
+            ctx.fillStyle = c1;
+            ctx.fillRect(0, 0, size, size);
+            ctx.fillStyle = c2;
+            ctx.fillRect(0, 0, size / 2, size / 2);
+            ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
+            const tex = new THREE.CanvasTexture(cvs);
+            tex.magFilter = THREE.LinearFilter;
+            tex.minFilter = THREE.LinearMipmapLinearFilter;
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+        const floorTex = checkerTexture("#241454", "#180d3a");
+        floorTex.repeat.set(ROOM / 1.1, ROOM / 1.1);
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(ROOM * 3, ROOM * 3),
+            new THREE.MeshLambertMaterial({
+                map: floorTex
+            }),
+        );
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        const ceilTex = checkerTexture("#0c0722", "#100a2c");
+        ceilTex.repeat.set(ROOM / 1.1, ROOM / 1.1);
+        const ceiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(ROOM * 3, ROOM * 3),
+            new THREE.MeshLambertMaterial({
+                map: ceilTex
+            }),
+        );
+        ceiling.rotation.x = Math.PI / 2;
+        ceiling.position.y = 11;
+        scene.add(ceiling);
+
+        const wallMat = new THREE.MeshLambertMaterial({
+            color: 0x1c1240
+        });
+        const SEGS = 36;
+        const GAP_CENTER = 0; // angle (radians) where the secret gap in the wall is
+        const GAP_HALF = 0.22;
+
+        function angleDiff(a, b) {
+            let d = Math.abs(a - b) % (Math.PI * 2);
+            if (d > Math.PI) d = Math.PI * 2 - d;
+            return d;
+        }
+
+        for (let i = 0; i < SEGS; i++) {
+            const a0 = (i / SEGS) * Math.PI * 2,
+                a1 = ((i + 1) / SEGS) * Math.PI * 2;
+            const segCenter = (a0 + a1) / 2;
+            if (angleDiff(segCenter, GAP_CENTER) < GAP_HALF) continue; // leave the secret gap open
+            const x0 = Math.cos(a0) * ROOM,
+                z0 = Math.sin(a0) * ROOM;
+            const x1 = Math.cos(a1) * ROOM,
+                z1 = Math.sin(a1) * ROOM;
+            const midx = (x0 + x1) / 2,
+                midz = (z0 + z1) / 2;
+            const len = Math.hypot(x1 - x0, z1 - z0) + 0.4;
+            const seg = new THREE.Mesh(new THREE.BoxGeometry(len, 10, 1), wallMat);
+            seg.position.set(midx, 5, midz);
+            seg.lookAt(0, 5, 0);
+            scene.add(seg);
+        }
+
+        /* ============ TEXT TEXTURES ============ */
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(" ");
+            let line = "",
+                lines = [];
+            for (const w of words) {
+                const test = line + w + " ";
+                if (ctx.measureText(test).width > maxWidth && line) {
+                    lines.push(line);
+                    line = w + " ";
+                } else line = test;
+            }
+            lines.push(line);
+            const startY = y - ((lines.length - 1) * lineHeight) / 2;
+            lines.forEach((l, i) => ctx.fillText(l.trim(), x, startY + i * lineHeight));
+        }
+
+        function plaqueTexture(title, colorHex) {
+            const cvs = document.createElement("canvas");
+            cvs.width = 512;
+            cvs.height = 128;
+            const ctx = cvs.getContext("2d");
+            ctx.fillStyle = "#0d0620";
+            ctx.fillRect(0, 0, 512, 128);
+            ctx.strokeStyle = colorHex;
+            ctx.lineWidth = 8;
+            ctx.strokeRect(4, 4, 504, 120);
+            ctx.fillStyle = colorHex;
+            ctx.font = "26px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            wrapText(ctx, title, 256, 64, 476, 30);
+            const tex = new THREE.CanvasTexture(cvs);
+            tex.magFilter = THREE.LinearFilter;
+            return tex;
+        }
+
+        function signTexture(title, colorHex) {
+            const cvs = document.createElement("canvas");
+            cvs.width = 768;
+            cvs.height = 192;
+            const ctx = cvs.getContext("2d");
+            ctx.fillStyle = "#0d0620";
+            ctx.fillRect(0, 0, 768, 192);
+            ctx.strokeStyle = colorHex;
+            ctx.lineWidth = 12;
+            ctx.strokeRect(6, 6, 756, 180);
+            ctx.fillStyle = colorHex;
+            ctx.font = "bold 44px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            wrapText(ctx, title, 384, 96, 680, 52);
+            const tex = new THREE.CanvasTexture(cvs);
+            tex.magFilter = THREE.LinearFilter;
+            return tex;
+        }
+
+        function hexStr(n) {
+            return "#" + n.toString(16).padStart(6, "0");
+        }
+
+        /* ============ SHAPE LIBRARY (3D representations by concept type) ============ */
+        function makeShape(shapeType, color) {
+            const mat = (c) =>
+                new THREE.MeshLambertMaterial({
+                    color: c,
+                    flatShading: true,
+                    emissive: c,
+                    emissiveIntensity: 0.28
+                });
+            const baseMat = mat(color);
+            switch (shapeType) {
+                case "sphere":
+                    return new THREE.Mesh(new THREE.SphereGeometry(0.72, 8, 6), baseMat);
+                case "point":
+                    return new THREE.Mesh(new THREE.SphereGeometry(0.32, 6, 5), baseMat);
+                case "ring":
+                    return new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.22, 6, 10), baseMat);
+                case "helix":
+                    return new THREE.Mesh(new THREE.TorusKnotGeometry(0.42, 0.15, 64, 8), baseMat);
+                case "capsule":
+                    return new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.25, 8), baseMat);
+                case "box":
+                    return new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.05, 1.05), baseMat);
+                case "cone":
+                    return new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.35, 4), baseMat);
+                case "disc":
+                    return new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.72, 0.18, 10), baseMat);
+
+                case "atom": {
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), baseMat));
+                    for (let i = 0; i < 3; i++) {
+                        const orbit = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.035, 6, 20), baseMat);
+                        orbit.rotation.x = (Math.PI / 2) * (i / 3) + i * 0.9;
+                        orbit.rotation.y = i * 1.1;
+                        g.add(orbit);
+                    }
+                    return g;
+                }
+                case "virusspiky": {
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.48, 1), baseMat));
+                    for (let i = 0; i < 8; i++) {
+                        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.28, 4), baseMat);
+                        const phi = Math.acos(1 - (2 * (i + 0.5)) / 8);
+                        const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+                        const dir = new THREE.Vector3(
+                            Math.sin(phi) * Math.cos(theta),
+                            Math.cos(phi),
+                            Math.sin(phi) * Math.sin(theta),
+                        );
+                        spike.position.copy(dir.clone().multiplyScalar(0.55));
+                        spike.lookAt(dir.clone().multiplyScalar(1.3));
+                        spike.rotateX(Math.PI / 2);
+                        g.add(spike);
+                    }
+                    return g;
+                }
+                case "rocket": {
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.9, 8), baseMat));
+                    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 8), baseMat);
+                    nose.position.y = 0.7;
+                    g.add(nose);
+                    const finGeo = new THREE.BoxGeometry(0.05, 0.35, 0.35);
+                    for (let i = 0; i < 3; i++) {
+                        const fin = new THREE.Mesh(finGeo, baseMat);
+                        const a = (i / 3) * Math.PI * 2;
+                        fin.position.set(Math.cos(a) * 0.24, -0.35, Math.sin(a) * 0.24);
+                        fin.rotation.y = a;
+                        g.add(fin);
+                    }
+                    return g;
+                }
+                case "book": {
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.14, 0.7), baseMat));
+                    const pages = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.16, 0.6), mat(0xf2eaff));
+                    pages.position.y = 0.02;
+                    g.add(pages);
+                    return g;
+                }
+                case "ringedplanet": {
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 6), baseMat));
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.08, 6, 20), baseMat);
+                    ring.rotation.x = Math.PI / 2.4;
+                    g.add(ring);
+                    return g;
+                }
+                case "moonorbit": {
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.62, 8, 6), baseMat));
+                    const moon = new THREE.Mesh(new THREE.SphereGeometry(0.2, 6, 5), baseMat);
+                    moon.position.set(0.95, 0.2, 0);
+                    g.add(moon);
+                    return g;
+                }
+                case "whale": {
+                    const g = new THREE.Group();
+                    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 1.3, 8), baseMat);
+                    body.rotation.z = Math.PI / 2;
+                    g.add(body);
+                    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.4, 4), baseMat);
+                    tail.rotation.z = -Math.PI / 2;
+                    tail.position.x = -0.85;
+                    g.add(tail);
+                    return g;
+                }
+                case "crystal":
+                default:
+                    return new THREE.Mesh(new THREE.IcosahedronGeometry(0.75, 0), baseMat);
+            }
+        }
+
+        /* ============ BUILD WINGS (arranged rows within pie sectors) ============ */
+        const exhibits = [];
+        const SECTOR_SPAN = (Math.PI * 2) / WINGS.length;
+        const MARGIN = 0.2;
+        const COLS = 7,
+            RADIUS_BASE = 13,
+            RADIUS_STEP = 7;
+
+        WINGS.forEach((wing, wi) => {
+            const sectorStart = wi * SECTOR_SPAN;
+            const sectorCenter = sectorStart + SECTOR_SPAN / 2;
+            const colorHex = hexStr(wing.color);
+
+            const sign = new THREE.Mesh(
+                new THREE.PlaneGeometry(4.8, 1.2),
+                new THREE.MeshBasicMaterial({
+                    map: signTexture(wing.label, colorHex),
+                    transparent: true
+                }),
+            );
+            const signR = ROOM - 2.4;
+            sign.position.set(Math.cos(sectorCenter) * signR, 3.6, Math.sin(sectorCenter) * signR);
+            sign.lookAt(0, 3.6, 0);
+            scene.add(sign);
+
+            [sectorStart, sectorStart + SECTOR_SPAN].forEach((edgeAngle) => {
+                if (angleDiff(edgeAngle, GAP_CENTER) < GAP_HALF + 0.1) return; // don't block the secret gap with a pillar
+                const pr = ROOM - 3;
+                const pillar = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.7, 0.9, 9, 6),
+                    new THREE.MeshLambertMaterial({
+                        color: 0x241a4d,
+                        flatShading: true
+                    }),
+                );
+                pillar.position.set(Math.cos(edgeAngle) * pr, 4.5, Math.sin(edgeAngle) * pr);
+                scene.add(pillar);
+            });
+
+            const sectorLight = new THREE.PointLight(wing.color, 1.2, 50);
+            sectorLight.position.set(Math.cos(sectorCenter) * (ROOM * 0.55), 4, Math.sin(sectorCenter) * (ROOM * 0.55));
+            scene.add(sectorLight);
+
+            const n = wing.items.length;
+            const usableSpan = SECTOR_SPAN - MARGIN * 2;
+
+            wing.items.forEach((item, i) => {
+                const row = Math.floor(i / COLS);
+                const col = i % COLS;
+                const colsInRow = Math.min(COLS, n - row * COLS);
+                const angle = sectorStart + MARGIN + (col + 0.5) * (usableSpan / colsInRow);
+                const radius = RADIUS_BASE + row * RADIUS_STEP;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+
+                const pedestal = new THREE.Mesh(
+                    new THREE.CylinderGeometry(1.0, 1.2, 1.5, 6),
+                    new THREE.MeshLambertMaterial({
+                        color: 0x2a1c5c,
+                        flatShading: true
+                    }),
+                );
+                pedestal.position.set(x, 0.75, z);
+                scene.add(pedestal);
+
+                const gem = makeShape(item.shape, wing.color);
+                gem.position.set(x, 2.3, z);
+                scene.add(gem);
+
+                // FIX: nameplates used to be positioned by scaling (x,z) toward the
+                // center by a flat 10% (x*0.9, z*0.9). Since radius grows with each
+                // outward row (13 -> 20 -> 27 -> 34...), that 10% became a huge
+                // absolute offset for outer rows, so far-out exhibits had their
+                // plaques drifting many units away from the actual pedestal/gem.
+                // Instead, pull the plaque toward the center by a FIXED distance,
+                // so it always sits close to its own exhibit no matter the radius.
+                const distXZ = Math.hypot(x, z) || 1;
+                const PLAQUE_OFFSET = 1.5;
+                const plaqueX = x - (x / distXZ) * PLAQUE_OFFSET;
+                const plaqueZ = z - (z / distXZ) * PLAQUE_OFFSET;
+
+                const plaque = new THREE.Mesh(
+                    new THREE.PlaneGeometry(2.2, 0.56),
+                    new THREE.MeshBasicMaterial({
+                        map: plaqueTexture(item.name, colorHex),
+                        transparent: true
+                    }),
+                );
+                plaque.position.set(plaqueX, 1.7, plaqueZ);
+                plaque.lookAt(0, 1.7, 0);
+                scene.add(plaque);
+
+                exhibits.push({
+                    wing,
+                    item,
+                    pos: new THREE.Vector3(x, 0, z),
+                    gem,
+                    found: false
+                });
+            });
+        });
+
+        /* ============ CENTRAL HUB CENTERPIECE ============ */
+        const hubGroup = new THREE.Group();
+        for (let i = 0; i < 10; i++) {
+            const a = (i / 10) * Math.PI * 2;
+            const orb = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(0.4, 0),
+                new THREE.MeshLambertMaterial({
+                    color: WINGS[i % WINGS.length].color,
+                    flatShading: true,
+                    emissive: WINGS[i % WINGS.length].color,
+                    emissiveIntensity: 0.3,
+                }),
+            );
+            orb.position.set(Math.cos(a) * 2.6, 3.2 + Math.sin(i) * 0.3, Math.sin(a) * 2.6);
+            hubGroup.add(orb);
+        }
+        const hubCore = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(1.1, 0),
+            new THREE.MeshLambertMaterial({
+                color: 0xffd94a,
+                flatShading: true,
+                emissive: 0xffd94a,
+                emissiveIntensity: 0.35,
+            }),
+        );
+        hubCore.position.y = 3.2;
+        hubGroup.add(hubCore);
+        scene.add(hubGroup);
+        const hubLight = new THREE.PointLight(0xffd94a, 1.4, 22);
+        hubLight.position.set(0, 4, 0);
+        scene.add(hubLight);
+
+        /* ============ SECRET AREA (beyond the wall gap) ============ */
+        const SECRET_R = ROOM + 16;
+        const secretExhibit = {
+            pos: new THREE.Vector3(Math.cos(GAP_CENTER) * SECRET_R, 0, Math.sin(GAP_CENTER) * SECRET_R),
+            found: false,
+        };
+        const secretGroup = new THREE.Group();
+        const secretCore = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(0.9, 1),
+            new THREE.MeshLambertMaterial({
+                color: 0xffffff,
+                flatShading: true,
+                emissive: 0xffd94a,
+                emissiveIntensity: 0.5,
+            }),
+        );
+        secretCore.position.set(secretExhibit.pos.x, 2.4, secretExhibit.pos.z);
+        secretGroup.add(secretCore);
+        const secretPedestal = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.0, 1.2, 1.5, 6),
+            new THREE.MeshLambertMaterial({
+                color: 0x2a1c5c,
+                flatShading: true
+            }),
+        );
+        secretPedestal.position.set(secretExhibit.pos.x, 0.75, secretExhibit.pos.z);
+        secretGroup.add(secretPedestal);
+        const secretLight = new THREE.PointLight(0xffd94a, 2, 30);
+        secretLight.position.set(secretExhibit.pos.x, 3, secretExhibit.pos.z);
+        secretGroup.add(secretLight);
+        scene.add(secretGroup);
+        // faint beacon glow near the gap, outside the wall, to hint something is out there without giving it away
+        const beaconLight = new THREE.PointLight(0xffd94a, 0.6, 40);
+        beaconLight.position.set(Math.cos(GAP_CENTER) * (ROOM + 6), 2, Math.sin(GAP_CENTER) * (ROOM + 6));
+        scene.add(beaconLight);
+
+        /* ============ AUDIO: MUSIC + SFX (synthesized in-browser, no external files) ============ */
+        let audioCtx = null;
+        let musicGain = null,
+            sfxGain = null;
+        let musicVolume = 0.35;
+        let sfxVolume = 0.6;
+        let musicPlaying = false;
+        let musicTimer = null;
+
+        function ensureAudio() {
+            if (audioCtx) return;
+            try {
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                musicGain = audioCtx.createGain();
+                musicGain.gain.value = musicVolume;
+                musicGain.connect(audioCtx.destination);
+                sfxGain = audioCtx.createGain();
+                sfxGain.gain.value = sfxVolume;
+                sfxGain.connect(audioCtx.destination);
+                startMusic();
+            } catch (e) {
+                audioCtx = null;
+            }
+        }
+
+        // Browsers require a user gesture before audio can play - grab the very first one.
+        ["keydown", "mousedown", "touchstart"].forEach((evt) => {
+            window.addEventListener(
+                evt,
+                function firstGesture() {
+                    ensureAudio();
+                    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+                }, {
+                    once: true
+                },
+            );
+        });
+
+        function playTone(freq, dur, type, destGain, startTime, peak) {
+            if (!audioCtx || !destGain) return;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = type || "sine";
+            osc.frequency.setValueAtTime(freq, startTime);
+            g.gain.setValueAtTime(0.0001, startTime);
+            g.gain.exponentialRampToValueAtTime(Math.max(peak || 0.3, 0.001), startTime + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
+            osc.connect(g);
+            g.connect(destGain);
+            osc.start(startTime);
+            osc.stop(startTime + dur + 0.05);
+        }
+
+        function sfxBlip() {
+            if (!audioCtx) return;
+            playTone(520, 0.08, "square", sfxGain, audioCtx.currentTime, 0.25);
+        }
+
+        function sfxOpen() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            playTone(440, 0.12, "triangle", sfxGain, t, 0.3);
+            playTone(660, 0.14, "triangle", sfxGain, t + 0.05, 0.25);
+        }
+
+        function sfxClose() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            playTone(500, 0.1, "triangle", sfxGain, t, 0.25);
+            playTone(350, 0.12, "triangle", sfxGain, t + 0.05, 0.2);
+        }
+
+        function sfxJump() {
+            if (!audioCtx) return;
+            playTone(300, 0.15, "sawtooth", sfxGain, audioCtx.currentTime, 0.2);
+        }
+
+        function sfxFootstep() {
+            if (!audioCtx) return;
+            playTone(120 + Math.random() * 30, 0.06, "square", sfxGain, audioCtx.currentTime, 0.08);
+        }
+
+        function sfxAchievement() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.5];
+            notes.forEach((f, i) => playTone(f, 0.22, "square", sfxGain, t + i * 0.09, 0.28));
+        }
+
+        // Gentle generative ambient loop - a slow arpeggio over a minor scale, so
+        // the museum always has a soft musical backdrop without any audio files.
+        const MUSIC_SCALE = [130.81, 146.83, 164.81, 196.0, 220.0, 246.94, 261.63, 293.66, 329.63, 293.66, 261.63, 246.94, 220.0, 196.0, 164.81, 146.83];
+        let musicStep = 0;
+
+        function scheduleMusicLoop() {
+            if (!audioCtx || !musicPlaying) return;
+            const t = audioCtx.currentTime;
+            const noteLen = 1.15;
+            const freq = MUSIC_SCALE[musicStep % MUSIC_SCALE.length];
+            playTone(freq, noteLen * 1.5, "sine", musicGain, t, 0.14);
+            playTone(freq * 2, noteLen * 0.9, "sine", musicGain, t + 0.03, 0.05);
+            musicStep++;
+            musicTimer = setTimeout(scheduleMusicLoop, noteLen * 1000);
+        }
+
+        function startMusic() {
+            if (musicPlaying) return;
+            musicPlaying = true;
+            scheduleMusicLoop();
+        }
+
+        /* ============ ACHIEVEMENTS ============ */
+        let secretFound = false;
+        let lastVisitedCount = 0;
+        const visitedWings = new Set();
+
+        function wingComplete(key) {
+            return exhibits.filter((e) => e.wing.key === key).every((e) => e.found);
+        }
+        const ACHIEVEMENTS = [{
+                id: "first",
+                name: "FIRST DISCOVERY",
+                desc: "Find your first exhibit.",
+                cond: () => foundCount >= 1
+            },
+            {
+                id: "ten",
+                name: "CURIOUS MIND",
+                desc: "Find 10 exhibits.",
+                cond: () => foundCount >= 10
+            },
+            {
+                id: "fifty",
+                name: "SCHOLAR",
+                desc: "Find 50 exhibits.",
+                cond: () => foundCount >= 50
+            },
+            {
+                id: "history",
+                name: "HISTORIAN",
+                desc: "Complete the History wing.",
+                cond: () => wingComplete("HISTORY")
+            },
+            {
+                id: "scale",
+                name: "SCALE MASTER",
+                desc: "Complete the Scale wing.",
+                cond: () => wingComplete("SCALE")
+            },
+            {
+                id: "micro",
+                name: "MICROBIOLOGIST",
+                desc: "Complete the Microbiology wing.",
+                cond: () => wingComplete("MICRO"),
+            },
+            {
+                id: "space",
+                name: "STARGAZER",
+                desc: "Complete the Astronomy wing.",
+                cond: () => wingComplete("SPACE")
+            },
+            {
+                id: "fun",
+                name: "FUN FACT FANATIC",
+                desc: "Complete the Fun Facts wing.",
+                cond: () => wingComplete("FUN")
+            },
+            {
+                id: "explorer",
+                name: "EXPLORER",
+                desc: "Step into every wing at least once.",
+                cond: () => visitedWings.size >= WINGS.length,
+            },
+            {
+                id: "secretfinder",
+                name: "SECRET FINDER",
+                desc: "Discover the hidden area beyond the walls.",
+                cond: () => secretFound,
+            },
+            {
+                id: "complete",
+                name: "COMPLETIONIST",
+                desc: "Find every exhibit in the museum.",
+                cond: () => foundCount >= exhibits.length,
+            },
+        ];
+        const unlockedAch = new Set();
+
+        function renderAchievements() {
+            const el = document.getElementById("achList");
+            el.innerHTML = "";
+            ACHIEVEMENTS.forEach((a) => {
+                const div = document.createElement("div");
+                div.className = "ach" + (unlockedAch.has(a.id) ? " unlocked" : "");
+                div.innerHTML = `<div class="icon">${unlockedAch.has(a.id) ? "&#127942;" : "&#128274;"}</div><div class="info"><b>${a.name}</b>${a.desc}</div>`;
+                el.appendChild(div);
+            });
+            document.getElementById("achCounter").textContent =
+                unlockedAch.size + " / " + ACHIEVEMENTS.length + " ACHIEVEMENTS";
+        }
+
+        const toastEl = document.getElementById("toast");
+        let toastTimer = null;
+
+        function showToast(name) {
+            toastEl.innerHTML = '&#127942; ACHIEVEMENT UNLOCKED<span class="sub">' + name + "</span>";
+            toastEl.classList.add("show");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3200);
+        }
+
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach((a) => {
+                if (!unlockedAch.has(a.id) && a.cond()) {
+                    unlockedAch.add(a.id);
+                    showToast(a.name);
+                    sfxAchievement();
+                }
+            });
+            renderAchievements();
+        }
+
+        /* ============ TOOLBAR UI BUILD ============ */
+        const entriesEl = document.getElementById("entries");
+        exhibits.forEach((ex, i) => (ex.idx = i));
+        WINGS.forEach((wing) => {
+            const h = document.createElement("h3");
+            h.textContent = wing.label;
+            h.style.color = hexStr(wing.color);
+            entriesEl.appendChild(h);
+            exhibits
+                .filter((e) => e.wing === wing)
+                .forEach((ex) => {
+                    const div = document.createElement("div");
+                    div.className = "entry";
+                    div.id = "entry" + ex.idx;
+                    div.innerHTML = `<div class="swatch" style="background:${hexStr(wing.color)}"></div><div class="name">${ex.item.name}</div><div class="mark">?</div>`;
+                    entriesEl.appendChild(div);
+                });
+        });
+        document.getElementById("counter").textContent = "0 / " + exhibits.length + " FOUND";
+        renderAchievements();
+
+        /* ============ CURSOR-FOLLOW LOOK ============ */
+        const keys = {};
+        let yaw = 0,
+            pitch = 0;
+        let velY = 0,
+            grounded = true;
+        const EYE = 1.7,
+            SPEED = 10,
+            JUMP = 6.2,
+            GRAV = 16;
+        let controlsActive = false;
+        let mouseNX = 0,
+            mouseNY = 0;
+        let sensMult = 1.0;
+        const BASE_TURN = 1.5,
+            BASE_TURN_V = 0.9;
+
+        document.addEventListener("mousemove", (e) => {
+            mouseNX = (e.clientX / window.innerWidth - 0.5) * 2;
+            mouseNY = (e.clientY / window.innerHeight - 0.5) * 2;
+        });
+
+        document.addEventListener("keydown", (e) => {
+            keys[e.code] = true;
+            if (e.code === "Space") e.preventDefault();
+            if (e.repeat) return; // ignore OS key-repeat so holding E/F doesn't spam-toggle
+            if (e.code === "KeyE") toggleToolbar();
+            if (e.code === "KeyF") tryInteract();
+        });
+        document.addEventListener("keyup", (e) => (keys[e.code] = false));
+
+        /* ============ TOUCH CONTROLS (mobile) ============ */
+        let touchMoveX = 0,
+            touchMoveZ = 0;
+        let joyTouchId = null,
+            lookTouchId = null;
+        let joyStartX = 0,
+            joyStartY = 0;
+        let lookLastX = 0,
+            lookLastY = 0;
+        const JOY_RADIUS = 52;
+        const LOOK_SENS_X = 0.006,
+            LOOK_SENS_Y = 0.005;
+
+        const joystickBase = document.getElementById("joystickBase");
+        const joystickThumb = document.getElementById("joystickThumb");
+        const lookZone = document.getElementById("lookZone");
+        const jumpBtn = document.getElementById("jumpBtn");
+        const interactBtn = document.getElementById("interactBtn");
+        const archiveBtn = document.getElementById("archiveBtn");
+
+        function resetJoystick() {
+            joyTouchId = null;
+            touchMoveX = 0;
+            touchMoveZ = 0;
+            joystickThumb.style.transform = "translate(0px, 0px)";
+        }
+
+        if (IS_MOBILE) {
+            joystickBase.addEventListener(
+                "touchstart",
+                (e) => {
+                    e.preventDefault();
+                    if (!controlsActive || joyTouchId !== null) return;
+                    const t = e.changedTouches[0];
+                    joyTouchId = t.identifier;
+                    joyStartX = t.clientX;
+                    joyStartY = t.clientY;
+                }, {
+                    passive: false
+                },
+            );
+
+            document.addEventListener(
+                "touchmove",
+                (e) => {
+                    for (const t of e.changedTouches) {
+                        if (t.identifier === joyTouchId) {
+                            e.preventDefault();
+                            let dx = t.clientX - joyStartX;
+                            let dy = t.clientY - joyStartY;
+                            const dist = Math.hypot(dx, dy);
+                            if (dist > JOY_RADIUS) {
+                                dx = (dx / dist) * JOY_RADIUS;
+                                dy = (dy / dist) * JOY_RADIUS;
+                            }
+                            joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
+                            touchMoveX = dx / JOY_RADIUS;
+                            touchMoveZ = -dy / JOY_RADIUS;
+                        }
+                    }
+                }, {
+                    passive: false
+                },
+            );
+
+            document.addEventListener("touchend", (e) => {
+                for (const t of e.changedTouches) {
+                    if (t.identifier === joyTouchId) resetJoystick();
+                    if (t.identifier === lookTouchId) lookTouchId = null;
+                }
+            });
+            document.addEventListener("touchcancel", (e) => {
+                for (const t of e.changedTouches) {
+                    if (t.identifier === joyTouchId) resetJoystick();
+                    if (t.identifier === lookTouchId) lookTouchId = null;
+                }
+            });
+
+            lookZone.addEventListener(
+                "touchstart",
+                (e) => {
+                    if (!controlsActive || lookTouchId !== null) return;
+                    const t = e.changedTouches[0];
+                    lookTouchId = t.identifier;
+                    lookLastX = t.clientX;
+                    lookLastY = t.clientY;
+                }, {
+                    passive: true
+                },
+            );
+
+            lookZone.addEventListener(
+                "touchmove",
+                (e) => {
+                    for (const t of e.changedTouches) {
+                        if (t.identifier === lookTouchId) {
+                            const dx = t.clientX - lookLastX;
+                            const dy = t.clientY - lookLastY;
+                            lookLastX = t.clientX;
+                            lookLastY = t.clientY;
+                            yaw -= dx * LOOK_SENS_X * sensMult;
+                            pitch -= dy * LOOK_SENS_Y * sensMult;
+                            pitch = Math.max(-1.2, Math.min(1.2, pitch));
+                        }
+                    }
+                }, {
+                    passive: true
+                },
+            );
+
+            const setSpace = (val) => (e) => {
+                e.preventDefault();
+                keys["Space"] = val;
+            };
+            jumpBtn.addEventListener("touchstart", setSpace(true), {
+                passive: false
+            });
+            jumpBtn.addEventListener("touchend", setSpace(false));
+            jumpBtn.addEventListener("touchcancel", setSpace(false));
+
+            interactBtn.addEventListener(
+                "touchstart",
+                (e) => {
+                    e.preventDefault();
+                    tryInteract();
+                }, {
+                    passive: false
+                },
+            );
+
+            archiveBtn.addEventListener("click", toggleToolbar);
+
+            document.getElementById("hint").textContent = "TAP INTERACT TO EXAMINE";
+        }
+
+        /* ============ TOOLBAR / MODAL LOGIC ============ */
+        const toolbar = document.getElementById("toolbar");
+        const settingsPanel = document.getElementById("settingsPanel");
+
+        function refreshControlsActive() {
+            controlsActive = !toolbar.classList.contains("open") && !modalOpen && settingsPanel.style.display !== "block" && !tutorialOpen;
+        }
+
+        function toggleToolbar() {
+            toolbar.classList.toggle("open");
+            sfxBlip();
+            refreshControlsActive();
+        }
+
+        const modal = document.getElementById("modal");
+        let modalOpen = false;
+        document.getElementById("mClose").addEventListener("click", closeModal);
+
+        function closeModal() {
+            modal.style.display = "none";
+            modalOpen = false;
+            sfxClose();
+            refreshControlsActive();
+        }
+
+        let foundCount = 0;
+
+        function tryInteract() {
+            if (modalOpen) {
+                closeModal();
+                return;
+            }
+            const camPos = camera.position;
+
+            const secretDist = Math.hypot(camPos.x - secretExhibit.pos.x, camPos.z - secretExhibit.pos.z);
+            let nearest = null,
+                nd = Infinity;
+            exhibits.forEach((ex) => {
+                const d = Math.hypot(camPos.x - ex.pos.x, camPos.z - ex.pos.z);
+                if (d < nd) {
+                    nd = d;
+                    nearest = ex;
+                }
+            });
+
+            if (secretDist < 4.0 && secretDist < nd) {
+                document.getElementById("mCat").textContent = "??? SECRET ???";
+                document.getElementById("mCat").style.color = "#ffd94a";
+                document.getElementById("mTitle").textContent = "THE CREATOR'S SECRET";
+                document.getElementById("mDesc").textContent =
+                    "You found the hidden edge of the museum! This whole place was imagined by an 11-year-old dreamer and built together with Claude, an AI assistant, in the summer of 2026. Thanks for exploring every corner - now go show someone what you built!";
+                modal.style.display = "flex";
+                modalOpen = true;
+                sfxOpen();
+                refreshControlsActive();
+                if (!secretExhibit.found) {
+                    secretExhibit.found = true;
+                    secretFound = true;
+                    checkAchievements();
+                }
+                return;
+            }
+
+            if (nearest && nd < 4.0) {
+                document.getElementById("mCat").textContent = nearest.wing.label;
+                document.getElementById("mCat").style.color = hexStr(nearest.wing.color);
+                document.getElementById("mTitle").textContent = nearest.item.name;
+                document.getElementById("mDesc").textContent = nearest.item.desc;
+                modal.style.display = "flex";
+                modalOpen = true;
+                sfxOpen();
+                refreshControlsActive();
+                if (!nearest.found) {
+                    nearest.found = true;
+                    foundCount++;
+                    document.getElementById("counter").textContent = foundCount + " / " + exhibits.length + " FOUND";
+                    const entry = document.getElementById("entry" + nearest.idx);
+                    entry.classList.add("found");
+                    entry.querySelector(".mark").textContent = "\u2713";
+                    checkAchievements();
+                }
+            }
+        }
+
+        /* ============ SETTINGS PANEL ============ */
+        const gearBtn = document.getElementById("gearBtn");
+        gearBtn.addEventListener("click", () => {
+            const isOpen = settingsPanel.style.display === "block";
+            settingsPanel.style.display = isOpen ? "none" : "block";
+            refreshControlsActive();
+        });
+        const sensSlider = document.getElementById("sensSlider");
+        const sensVal = document.getElementById("sensVal");
+        sensSlider.addEventListener("input", () => {
+            sensMult = parseFloat(sensSlider.value);
+            sensVal.textContent = sensMult.toFixed(1) + "x";
+        });
+
+        const musicSlider = document.getElementById("musicSlider");
+        const musicVal = document.getElementById("musicVal");
+        musicSlider.addEventListener("input", () => {
+            musicVolume = parseFloat(musicSlider.value);
+            musicVal.textContent = Math.round(musicVolume * 100) + "%";
+            if (musicGain) musicGain.gain.value = musicVolume;
+        });
+
+        const sfxSlider = document.getElementById("sfxSlider");
+        const sfxVal = document.getElementById("sfxVal");
+        sfxSlider.addEventListener("input", () => {
+            sfxVolume = parseFloat(sfxSlider.value);
+            sfxVal.textContent = Math.round(sfxVolume * 100) + "%";
+            if (sfxGain) sfxGain.gain.value = sfxVolume;
+        });
+
+        document.getElementById("replayTutorial").addEventListener("click", () => {
+            settingsPanel.style.display = "none";
+            openTutorial();
+        });
+
+        /* ============ TUTORIAL ============ */
+        const TUTORIAL_SLIDES = IS_MOBILE ?
+            [{
+                    h: "MUSEUM OF<br>KNOWLEDGE",
+                    body: "<p>A pixelated 3D hall with five wings of knowledge: Scale of the Universe, History, Microbiology, Astronomy, and Fun Facts.</p>",
+                },
+                {
+                    h: "MOVE AROUND",
+                    body: "<p>Use the joystick in the bottom-left corner of the screen to walk through the museum. Push it in any direction to move that way.</p>",
+                },
+                {
+                    h: "LOOK AROUND",
+                    body: "<p>Drag your finger anywhere on the right side of the screen to turn and look around.</p>",
+                },
+                {
+                    h: "JUMP",
+                    body: "<p>Tap the round JUMP button in the bottom-right to hop.</p>",
+                },
+                {
+                    h: "INTERACT & ARCHIVE",
+                    body: "<p>Walk up to a glowing exhibit and tap INTERACT to read about it. Tap the book icon top-left anytime to open your archive and see achievements and what you've found.</p>",
+                },
+                {
+                    h: "SECRETS & SETTINGS",
+                    body: "<p>There's a hidden secret somewhere beyond the museum's outer wall - explore carefully! Tap the gear icon top-left anytime to adjust look sensitivity, music, SFX volume, or replay this tutorial.</p>",
+                },
+            ] :
+            [{
+                    h: "MUSEUM OF<br>KNOWLEDGE",
+                    body: "<p>A pixelated 3D hall with five wings of knowledge: Scale of the Universe, History, Microbiology, Astronomy, and Fun Facts.</p>",
+                },
+                {
+                    h: "MOVE AROUND",
+                    body: "<p>Use these keys to walk through the museum:</p><div><span class='keyTag'>W</span><span class='keyTag'>A</span><span class='keyTag'>S</span><span class='keyTag'>D</span></div>",
+                },
+                {
+                    h: "LOOK AROUND",
+                    body: "<p>Move your mouse cursor toward the edge of the screen and your view turns that way - like a joystick. No clicking needed.</p>",
+                },
+                {
+                    h: "JUMP",
+                    body: "<p>Press the spacebar to hop.</p><div><span class='keyTag'>SPACE</span></div>"
+                },
+                {
+                    h: "INTERACT & ARCHIVE",
+                    body: "<p>Walk up to a glowing exhibit and press F to read about it. Press E anytime to open your archive and see achievements and what you've found.</p><div><span class='keyTag'>F interact</span> &nbsp; <span class='keyTag'>E archive</span></div>",
+                },
+                {
+                    h: "SECRETS & SETTINGS",
+                    body: "<p>There's a hidden secret somewhere beyond the museum's outer wall - explore carefully! Click the gear icon top-left anytime to adjust look sensitivity, music, SFX volume, or replay this tutorial.</p>",
+                },
+            ];
+        let slideIdx = 0;
+        let tutorialOpen = true;
+        const tutorialEl = document.getElementById("tutorial");
+        const slideBody = document.getElementById("slideBody");
+        const dotsEl = document.getElementById("dots");
+        const navRow = document.getElementById("navRow");
+
+        function renderSlide() {
+            const s = TUTORIAL_SLIDES[slideIdx];
+            slideBody.innerHTML = `<h1>${s.h}</h1>${s.body}`;
+            dotsEl.innerHTML = TUTORIAL_SLIDES.map(
+                (_, i) => `<span class="dot ${i === slideIdx ? "on" : ""}"></span>`,
+            ).join("");
+            navRow.innerHTML = "";
+            if (slideIdx > 0) {
+                const back = document.createElement("button");
+                back.className = "secondary";
+                back.textContent = "BACK";
+                back.onclick = () => {
+                    slideIdx--;
+                    renderSlide();
+                };
+                navRow.appendChild(back);
+            }
+            const next = document.createElement("button");
+            next.textContent = slideIdx === TUTORIAL_SLIDES.length - 1 ? "START EXPLORING" : "NEXT";
+            next.onclick = () => {
+                if (slideIdx === TUTORIAL_SLIDES.length - 1) closeTutorial();
+                else {
+                    slideIdx++;
+                    renderSlide();
+                }
+            };
+            navRow.appendChild(next);
+        }
+
+        function openTutorial() {
+            slideIdx = 0;
+            tutorialOpen = true;
+            tutorialEl.style.display = "flex";
+            refreshControlsActive();
+            renderSlide();
+        }
+
+        function closeTutorial() {
+            tutorialEl.style.display = "none";
+            tutorialOpen = false;
+            document.getElementById("hint").style.display = "block";
+            document.getElementById("zoneLabel").style.display = "block";
+            gearBtn.style.display = "block";
+            refreshControlsActive();
+        }
+        renderSlide();
+
+        /* ============ MOVEMENT / COLLISION ============ */
+        const clock = new THREE.Clock();
+        let footstepClock = 0;
+
+        function currentWing(x, z) {
+            let angle = Math.atan2(z, x);
+            if (angle < 0) angle += Math.PI * 2;
+            const idx = Math.floor(angle / SECTOR_SPAN) % WINGS.length;
+            return WINGS[idx];
+        }
+        const DEADZONE = 0.04;
+
+        function updatePlayer(dt) {
+            if (controlsActive && !IS_MOBILE) {
+                let nx = mouseNX,
+                    ny = mouseNY;
+                if (Math.abs(nx) < DEADZONE) nx = 0;
+                if (Math.abs(ny) < DEADZONE) ny = 0;
+                yaw -= nx * nx * Math.sign(nx) * BASE_TURN * sensMult * dt;
+                pitch -= ny * ny * Math.sign(ny) * BASE_TURN_V * sensMult * dt;
+                pitch = Math.max(-1.2, Math.min(1.2, pitch));
+            }
+
+            const forward = new THREE.Vector3(Math.sin(yaw) * -1, 0, Math.cos(yaw) * -1);
+            const right = new THREE.Vector3(forward.z, 0, -forward.x);
+            const move = new THREE.Vector3();
+            if (controlsActive) {
+                if (keys["KeyW"]) move.add(forward);
+                if (keys["KeyS"]) move.sub(forward);
+                if (keys["KeyD"]) move.add(right);
+                if (keys["KeyA"]) move.sub(right);
+                if (IS_MOBILE) {
+                    move.add(forward.clone().multiplyScalar(touchMoveZ));
+                    move.add(right.clone().multiplyScalar(touchMoveX));
+                }
+            }
+            if (move.lengthSq() > 1) {
+                move.normalize();
+            }
+            const isMoving = move.lengthSq() > 0.0001;
+            if (isMoving) {
+                move.multiplyScalar(SPEED * dt);
+            }
+
+            let nx2 = camera.position.x + move.x;
+            let nz2 = camera.position.z + move.z;
+
+            exhibits.forEach((ex) => {
+                const dx = nx2 - ex.pos.x,
+                    dz = nz2 - ex.pos.z;
+                const dist = Math.hypot(dx, dz);
+                const minD = 1.6;
+                if (dist < minD && dist > 0.0001) {
+                    nx2 = ex.pos.x + (dx / dist) * minD;
+                    nz2 = ex.pos.z + (dz / dist) * minD;
+                }
+            });
+
+            const distFromCenter = Math.hypot(nx2, nz2);
+            let angleAtPoint = Math.atan2(nz2, nx2);
+            if (angleAtPoint < 0) angleAtPoint += Math.PI * 2;
+            const inGap = angleDiff(angleAtPoint, GAP_CENTER) < GAP_HALF;
+            const maxR = inGap ? ROOM + 22 : ROOM - 1.4;
+            if (distFromCenter > maxR) {
+                const s = maxR / distFromCenter;
+                nx2 *= s;
+                nz2 *= s;
+            }
+            camera.position.x = nx2;
+            camera.position.z = nz2;
+
+            if (controlsActive && keys["Space"] && grounded) {
+                velY = JUMP;
+                grounded = false;
+                sfxJump();
+            }
+            velY -= GRAV * dt;
+            camera.position.y += velY * dt;
+            if (camera.position.y <= EYE) {
+                camera.position.y = EYE;
+                velY = 0;
+                grounded = true;
+            }
+
+            // Footstep SFX: only while actually walking on the ground, throttled
+            // so it clicks along at a natural walking cadence instead of every frame.
+            if (isMoving && grounded && controlsActive) {
+                footstepClock += dt;
+                if (footstepClock >= 0.32) {
+                    footstepClock = 0;
+                    sfxFootstep();
+                }
+            } else {
+                footstepClock = 0.16;
+            }
+
+            camera.rotation.order = "YXZ";
+            camera.rotation.y = yaw;
+            camera.rotation.x = pitch;
+
+            let near = false;
+            exhibits.forEach((ex) => {
+                if (Math.hypot(camera.position.x - ex.pos.x, camera.position.z - ex.pos.z) < 4.0) near = true;
+            });
+            if (Math.hypot(camera.position.x - secretExhibit.pos.x, camera.position.z - secretExhibit.pos.z) < 4.0)
+                near = true;
+            document.getElementById("hint").style.opacity = near ? "1" : ".35";
+
+            if (distFromCenter <= ROOM) {
+                const w = currentWing(camera.position.x, camera.position.z);
+                visitedWings.add(w.key);
+                const zl = document.getElementById("zoneLabel");
+                zl.textContent = w.label;
+                zl.style.color = hexStr(w.color);
+                zl.style.borderColor = hexStr(w.color);
+            } else {
+                const zl = document.getElementById("zoneLabel");
+                zl.textContent = "??? UNKNOWN AREA";
+                zl.style.color = "#ffd94a";
+                zl.style.borderColor = "#ffd94a";
+            }
+        }
+
+        /* ============ ANIMATE ============ */
+        sizeRenderer();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(0.05, clock.getDelta());
+            updatePlayer(dt);
+            exhibits.forEach((ex) => (ex.gem.rotation.y += dt * 0.8));
+            hubGroup.rotation.y += dt * 0.4;
+            secretCore.rotation.y += dt * 0.6;
+            secretCore.rotation.x += dt * 0.3;
+            if (visitedWings.size !== lastVisitedCount) {
+                lastVisitedCount = visitedWings.size;
+                checkAchievements();
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
