@@ -6195,7 +6195,8 @@ setInterval(function () {
         scene.add(ceiling);
 
         const wallMat = new THREE.MeshLambertMaterial({
-            color: 0x1c1240
+            color: 0x1c1240,
+            fog: false, // walls were picking up the scene fog same as everything else, and their dark color is close enough to the fog color that they visually blended into the background at a distance - looked "see-through" even though they were always fully opaque
         });
         const SEGS = 36;
         // Each of the 36 wall segments spans ~2*PI*ROOM/36 =~ 59 units - huge.
@@ -7406,7 +7407,20 @@ setInterval(function () {
             const distFromCenter = Math.hypot(nx2, nz2);
             let angleAtPoint = Math.atan2(nz2, nx2);
             if (angleAtPoint < 0) angleAtPoint += Math.PI * 2;
-            const inGap = angleDiff(angleAtPoint, GAP_CENTER) < GAP_HALF;
+            // The doorway itself (GAP_HALF) stays exactly as narrow as it is -
+            // squeezing THROUGH the wall is unchanged. But this used to also
+            // force that same razor-thin angle for the ENTIRE trip out to the
+            // secret exhibit and back, so any sideways step out there yanked
+            // you straight back through the wall - there was no room to move.
+            // Now the allowed angle widens out the further past the wall you
+            // are, opening into a small pocket, while still narrowing back
+            // down to the real doorway width right at the wall so you can't
+            // just walk through it anywhere else.
+            const POCKET_HALF = 0.09; // angular half-width of the open pocket area beyond the wall - widened for a more comfortable buffer
+            const widenDist = 5; // widen out fully within this many units of stepping past the wall
+            const t = Math.max(0, Math.min(1, (distFromCenter - ROOM) / widenDist));
+            const allowedHalf = GAP_HALF + (POCKET_HALF - GAP_HALF) * t;
+            const inGap = angleDiff(angleAtPoint, GAP_CENTER) < allowedHalf;
             const maxR = inGap ? ROOM + 12 : ROOM - 1.4;
             if (distFromCenter > maxR) {
                 const s = maxR / distFromCenter;
