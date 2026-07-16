@@ -6198,8 +6198,19 @@ setInterval(function () {
             color: 0x1c1240
         });
         const SEGS = 36;
-        const GAP_CENTER = 0; // angle (radians) where the secret gap in the wall is
-        const GAP_HALF = 0.22;
+        // Each of the 36 wall segments spans ~2*PI*ROOM/36 =~ 59 units - huge.
+        // Previously the "gap" worked by skipping one or more WHOLE segments,
+        // so the smallest possible opening was ~59 units wide no matter how
+        // small GAP_HALF was set - nowhere near doorway-sized, and shifting
+        // it only moved which side it ate into rather than shrinking it.
+        // Now the wall is built as normal, solid, unbroken chunks, and a
+        // separate DOOR_HALF_WIDTH (in real world units, not wall segments)
+        // carves a small doorway-sized notch directly out of the two
+        // segments that meet at GAP_CENTER - splitting the doorway evenly
+        // between both neighboring segments/wings.
+        const GAP_CENTER = 0; // back on the seam between Scale of the Universe and Engineering, so the doorway takes equally (and barely) from both sides
+        const DOOR_HALF_WIDTH = 0.75; // half-width in world units - about wide enough for one person to walk through comfortably, tight for two side by side
+        const GAP_HALF = DOOR_HALF_WIDTH / ROOM; // angular half-width matching the physical doorway, used for player passability too
 
         function angleDiff(a, b) {
             let d = Math.abs(a - b) % (Math.PI * 2);
@@ -6207,11 +6218,21 @@ setInterval(function () {
             return d;
         }
 
+        function angNear(a, target, tol) {
+            const twoPi = Math.PI * 2;
+            const d = Math.min(Math.abs(a - target), Math.abs(a - target - twoPi), Math.abs(a - target + twoPi));
+            return d < tol;
+        }
+
         for (let i = 0; i < SEGS; i++) {
-            const a0 = (i / SEGS) * Math.PI * 2,
+            let a0 = (i / SEGS) * Math.PI * 2,
                 a1 = ((i + 1) / SEGS) * Math.PI * 2;
-            const segCenter = (a0 + a1) / 2;
-            if (angleDiff(segCenter, GAP_CENTER) < GAP_HALF) continue; // leave the secret gap open
+            // if this segment's start or end edge sits at the doorway, pull
+            // that edge back so the segment stops right at the doorway frame
+            // instead of continuing across it
+            if (angNear(a0, GAP_CENTER, GAP_HALF * 1.01)) a0 = GAP_CENTER + GAP_HALF;
+            if (angNear(a1, GAP_CENTER, GAP_HALF * 1.01)) a1 = GAP_CENTER - GAP_HALF + Math.PI * 2;
+            if (a1 <= a0) continue; // this sliver is entirely the doorway itself
             const x0 = Math.cos(a0) * ROOM,
                 z0 = Math.sin(a0) * ROOM;
             const x1 = Math.cos(a1) * ROOM,
@@ -6536,15 +6557,12 @@ setInterval(function () {
         const DIVIDER_OUTER_R = ROOM - 2;
         WINGS.forEach((wing, wi) => {
             const edgeAngle = wi * SECTOR_SPAN;
-            // NOTE: this used to reuse the pillar's skip-buffer (GAP_HALF + 0.1),
-            // which is fine for thick pillars but too wide a buffer for thin
-            // floor lines once sectors got narrower than that buffer (21
-            // wings). That caused 3 boundaries near the gap to be skipped
-            // instead of just the 1 that's actually at the gap opening, which
-            // looked like "a few lines are missing". Using GAP_HALF alone
-            // (no extra buffer) skips only the boundary that truly falls
-            // inside the secret gap.
-            if (angleDiff(edgeAngle, GAP_CENTER) < GAP_HALF) return; // don't draw through the secret gap
+            // Every boundary gets a line now, including the one nearest the
+            // secret gap - the gap is now off-seam from the wing boundaries
+            // (see GAP_CENTER above), and leaving every line intact keeps the
+            // floor perfectly uniform, so nothing about it gives the secret
+            // away. The gap itself is still findable by the pillar that's
+            // missing right at the actual opening.
             const length = DIVIDER_OUTER_R - DIVIDER_INNER_R;
             const midR = (DIVIDER_INNER_R + DIVIDER_OUTER_R) / 2;
             const divider = new THREE.Mesh(new THREE.BoxGeometry(length, 0.05, 0.5), dividerMat);
